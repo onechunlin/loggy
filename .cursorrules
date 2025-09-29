@@ -1,0 +1,142 @@
+# Cursor Rules for Next.js 15 Project
+
+## 项目概述
+这是一个使用 Next.js 15、React 19、TypeScript 和 Tailwind CSS 4 的现代 Web 应用项目。
+
+## 技术栈
+- **框架**: Next.js 15.5.4 (App Router)
+- **React**: 19.1.0
+- **TypeScript**: ^5
+- **样式**: Tailwind CSS 4
+- **包管理器**: pnpm
+- **构建工具**: Turbopack
+- **字体**: Geist Sans & Geist Mono
+
+## 代码规范
+
+### TypeScript
+- 使用严格的 TypeScript 配置
+- 优先使用类型推断，避免不必要的类型注解
+- 使用 `interface` 定义对象类型
+- 使用 `type` 定义联合类型和复杂类型
+- 为所有函数参数和返回值添加类型注解
+- 使用 `Readonly<>` 修饰符确保不可变性
+
+### React/Next.js
+- 使用函数组件和 React Hooks
+- 优先使用 Server Components，仅在需要时使用 Client Components
+- 使用 `"use client"` 指令标记客户端组件
+- 遵循 Next.js 15 的最佳实践
+- 使用 App Router 的文件系统路由
+- 正确使用 `async/await` 处理 Server Components 中的数据获取
+
+### 组件设计
+- 组件名使用 PascalCase
+- 文件名使用 kebab-case 或 PascalCase
+- 每个组件一个文件
+- 使用 TypeScript 接口定义 props
+- 优先使用 composition 而非继承
+
+### 样式规范
+- 使用 Tailwind CSS 4 进行样式设计
+- 优先使用 Tailwind 工具类，避免自定义 CSS
+- 使用响应式设计前缀 (sm:, md:, lg:, xl:)
+- 支持暗色模式 (dark:)
+- 使用 CSS 变量进行主题定制
+
+### 文件结构
+```
+app/
+├── globals.css          # 全局样式
+├── layout.tsx          # 根布局
+├── page.tsx            # 首页
+└── [feature]/          # 功能模块
+    ├── page.tsx        # 页面组件
+    ├── layout.tsx      # 布局组件
+    └── components/     # 组件目录
+```
+
+### 导入规范
+- 使用绝对路径导入 (`@/`)
+- 导入顺序：React → Next.js → 第三方库 → 本地组件 → 类型定义
+- 使用命名导入而非默认导入（除非必要）
+
+### 性能优化
+- 使用 `next/image` 优化图片
+- 使用 `next/link` 进行客户端路由
+- 实现代码分割和懒加载
+- 使用 React.memo 优化重渲染
+- 合理使用 useMemo 和 useCallback
+
+### 错误处理
+- 使用 Error Boundaries 捕获组件错误
+- 实现全局错误处理
+- 使用 try-catch 处理异步操作
+- 提供有意义的错误信息
+
+### 国际化
+- 支持中文界面 (lang="zh-CN")
+- 使用 Next.js 国际化功能
+- 文本内容使用中文
+
+### 开发工具
+- 使用 ESLint 进行代码检查
+- 使用 TypeScript 进行类型检查
+- 使用 Turbopack 进行快速构建
+- 遵循 Next.js 推荐的开发工作流
+
+## 代码示例
+
+### 组件定义
+```tsx
+interface ComponentProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+export default function Component({ title, children }: ComponentProps) {
+  return (
+    <div className="container mx-auto px-4">
+      <h1 className="text-2xl font-bold">{title}</h1>
+      {children}
+    </div>
+  );
+}
+```
+
+### Server Component
+```tsx
+async function ServerComponent() {
+  const data = await fetch('https://api.example.com/data');
+  const result = await data.json();
+  
+  return <div>{result.title}</div>;
+}
+```
+
+### Client Component
+```tsx
+"use client";
+
+import { useState } from 'react';
+
+export default function ClientComponent() {
+  const [count, setCount] = useState(0);
+  
+  return (
+    <button 
+      onClick={() => setCount(count + 1)}
+      className="px-4 py-2 bg-blue-500 text-white rounded"
+    >
+      Count: {count}
+    </button>
+  );
+}
+```
+
+## 注意事项
+- 始终使用最新的 Next.js 15 特性
+- 遵循 React 19 的最佳实践
+- 保持代码简洁、可读、可维护
+- 编写有意义的注释和文档
+- 确保代码在开发和生产环境中都能正常运行
