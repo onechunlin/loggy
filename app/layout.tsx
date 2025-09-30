@@ -14,29 +14,6 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Loggy-AI",
-  description: "智能助手，随时为您提供帮助",
-  manifest: "/manifest.json",
-  themeColor: "#6b7280",
-  viewport:
-    "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Loggy-AI",
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  openGraph: {
-    type: "website",
-    siteName: "Loggy-AI",
-    title: "Loggy-AI",
-    description: "智能助手，随时为您提供帮助",
-  },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/icons/icon-192x192.png",
-  },
 };
 
 export default function RootLayout({
