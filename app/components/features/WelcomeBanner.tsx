@@ -9,7 +9,7 @@ export default function WelcomeBanner() {
   const typedRef = useTyped();
 
   return (
-    <div className="text-center mb-12">
+    <div className="text-center">
       <h1 className="text-2xl font-medium text-gray-800 mb-2">
         <span ref={typedRef}></span>
       </h1>

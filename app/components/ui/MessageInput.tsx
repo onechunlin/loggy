@@ -4,17 +4,21 @@ import { useState } from "react";
 
 interface MessageInputProps {
   onSubmit: (message: string) => void;
+  disabled?: boolean;
 }
 
 /**
  * 消息输入组件
  */
-export default function MessageInput({ onSubmit }: MessageInputProps) {
+export default function MessageInput({
+  onSubmit,
+  disabled = false,
+}: MessageInputProps) {
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
+    if (message.trim() && !disabled) {
       onSubmit(message.trim());
       setMessage("");
     }
@@ -28,14 +32,15 @@ export default function MessageInput({ onSubmit }: MessageInputProps) {
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="输入你今天的问题"
-            className="flex-1 px-4 py-4 bg-transparent border-none outline-none text-gray-800 placeholder-gray-400 text-base resize-none min-h-[60px]"
+            placeholder={disabled ? "AI 正在回复..." : "输入你今天的问题"}
+            disabled={disabled}
+            className="flex-1 px-4 py-4 bg-transparent border-none outline-none text-gray-800 placeholder-gray-400 text-base resize-none min-h-[60px] disabled:opacity-50 disabled:cursor-not-allowed"
             rows={3}
           />
           {/* 发送按钮 */}
           <button
             type="submit"
-            disabled={!message.trim()}
+            disabled={!message.trim() || disabled}
             className="p-3 text-gray-400 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             aria-label="发送消息"
           >
