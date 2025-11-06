@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Message } from "@/app/types";
 import MessageInput from "@/app/components/ui/MessageInput";
+import AssistantMessage from "@/app/components/features/AssistantMessage";
 
 interface MessageListProps {
   messages: Message[];
@@ -18,7 +20,7 @@ function MessageList({ messages, isStreaming }: MessageListProps) {
   useEffect(() => {
     // 自动滚动到底部
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isStreaming]);
+  }, [messages]);
 
   if (messages.length === 0) {
     return null;
@@ -26,46 +28,45 @@ function MessageList({ messages, isStreaming }: MessageListProps) {
 
   return (
     <div className="w-full max-w-2xl space-y-4 mb-6">
-      {messages.map((message) => (
-        <div
-          key={message.id}
-          className={`flex ${
-            message.role === "user" ? "justify-end" : "justify-start"
-          }`}
-        >
-          <div
-            className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-              message.role === "user"
-                ? "bg-blue-500 text-white"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            <p className="text-sm whitespace-pre-wrap break-words">
-              {message.content || ""}
-            </p>
-          </div>
-        </div>
-      ))}
-      {isStreaming && (
-        <div className="flex justify-start">
-          <div className="bg-gray-100 text-gray-800 rounded-2xl px-4 py-3">
-            <div className="flex space-x-1">
-              <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0ms" }}
-              ></div>
-              <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: "150ms" }}
-              ></div>
-              <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: "300ms" }}
-              ></div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {messages.map((message, index) => {
+          // 判断是否是最后一条消息且为 assistant 消息
+          const isLastMessage = index === messages.length - 1;
+          const showThinking =
+            message.role === "assistant" && isLastMessage && isStreaming;
+
+          return (
+            <motion.div
+              key={message.id}
+              className={`flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              }`}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{
+                duration: 0.3,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+              {message.role === "assistant" ? (
+                <div className="max-w-[80%]">
+                  <AssistantMessage
+                    content={message.content}
+                    isStreaming={showThinking}
+                  />
+                </div>
+              ) : (
+                <div className="max-w-[80%] rounded-2xl px-4 py-3 transition-all bg-blue-500 text-white">
+                  <p className="text-sm whitespace-pre-wrap break-words">
+                    {message.content}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
       <div ref={messagesEndRef} />
     </div>
   );
