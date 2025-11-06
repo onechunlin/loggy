@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Toast } from "antd-mobile";
 import WelcomeBanner from "@/app/components/features/WelcomeBanner";
 import ChatContainer from "@/app/components/features/ChatContainer";
 import MessageInput from "@/app/components/ui/MessageInput";
 import { useChatStream } from "@/app/hooks/use-chat-stream";
+import { useToast } from "@/app/hooks/use-toast";
 import type { Message } from "@/app/types";
 import { generateId } from "@/app/lib/utils";
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const { showToast, ToastComponent } = useToast();
 
   const { stream, isStreaming, abort } = useChatStream({
     onContent: (fullContent) => {
@@ -32,11 +33,8 @@ export default function Home() {
       // 流式响应完成
     },
     onError: (errorMessage) => {
-      // 使用 Toast 显示错误提示
-      Toast.show({
-        content: `错误: ${errorMessage}`,
-        duration: 3000,
-      });
+      // 使用自定义 Toast 显示错误提示
+      showToast(`错误: ${errorMessage}`, 3000);
       // 移除正在生成的消息
       setMessages((prev) => {
         const newMessages = [...prev];
@@ -98,6 +96,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      {/* Toast 提示 */}
+      {ToastComponent}
+
       {/* 主内容区域 */}
       <main className="flex-1 flex flex-col min-h-0">
         {messages.length === 0 ? (
