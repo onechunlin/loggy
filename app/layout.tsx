@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-
-const APP_NAME = "Loggy";
-const APP_DEFAULT_TITLE = "Loggy";
-const APP_TITLE_TEMPLATE = "%s - Loggy";
-const APP_DESCRIPTION = "智能助手，随时为您提供帮助";
+import {
+  APP_NAME,
+  APP_DEFAULT_TITLE,
+  APP_TITLE_TEMPLATE,
+  APP_DESCRIPTION,
+} from "@/app/lib/constants";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,

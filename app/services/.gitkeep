@@ -1,0 +1,11 @@
+/**
+ * 服务层 - 业务逻辑处理
+ * 
+ * 示例：
+ * export class MessageService {
+ *   async sendMessage(message: string) {
+ *     // 实现消息发送逻辑
+ *   }
+ * }
+ */
+

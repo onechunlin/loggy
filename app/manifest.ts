@@ -1,14 +1,9 @@
 import type { MetadataRoute } from "next";
+import { APP_MANIFEST } from "@/app/lib/constants";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Loggy-AI",
-    short_name: "Loggy",
-    description: "智能助手，随时为您提供帮助",
-    start_url: "/",
-    display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#6b7280",
+    ...APP_MANIFEST,
     icons: [
       {
         src: "/icons/icon-192x192.png",
