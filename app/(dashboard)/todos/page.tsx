@@ -157,7 +157,7 @@ export default function TodosPage() {
   // 加载状态
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50/30 flex items-center justify-center">
+      <div className="h-full bg-gradient-to-br from-gray-50 to-orange-50/30 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -177,7 +177,7 @@ export default function TodosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50/30">
+    <div className="h-full bg-gradient-to-br from-gray-50 to-orange-50/30">
       {/* Toast */}
       {ToastComponent}
 

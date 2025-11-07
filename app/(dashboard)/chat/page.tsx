@@ -157,7 +157,7 @@ export default function ChatPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col relative overflow-hidden">
+    <div className="h-full bg-white flex flex-col relative overflow-hidden">
       {/* 背景装饰元素 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div

@@ -57,10 +57,9 @@ export default function DailyOverview({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className="mb-8"
     >
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 今日概览</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <h2 className="text-base font-semibold text-gray-900 mb-3">📊 今日概览</h2>
+      <div className="grid grid-cols-3 gap-2">
         {overviewItems.map((item, index) => (
           <motion.div
             key={item.id}
@@ -68,12 +67,12 @@ export default function DailyOverview({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            className={`${item.bgColor} rounded-2xl p-6 border border-transparent hover:border-gray-200 transition-all cursor-pointer`}
+            className={`${item.bgColor} rounded-xl p-3 border border-transparent hover:border-gray-200 transition-all cursor-pointer`}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-3xl">{item.icon}</span>
+            <div className="flex flex-col items-center justify-center mb-2">
+              <span className="text-2xl mb-1">{item.icon}</span>
               <motion.span
-                className={`text-3xl font-bold ${item.color}`}
+                className={`text-xl font-bold ${item.color}`}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5 + index * 0.1, type: "spring" }}
@@ -81,7 +80,7 @@ export default function DailyOverview({
                 {item.value}
               </motion.span>
             </div>
-            <p className="text-sm text-gray-600 font-medium">{item.label}</p>
+            <p className="text-xs text-gray-600 font-medium text-center">{item.label}</p>
           </motion.div>
         ))}
       </div>

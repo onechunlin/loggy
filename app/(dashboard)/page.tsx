@@ -72,15 +72,15 @@ export default function HomePage() {
         {/* 问候卡片 */}
         <GreetingCard />
 
-        {/* 今日概览 */}
-        <DailyOverview
-          pendingTodos={pendingTodos}
-          totalNotes={totalNotes}
-          totalMessages={totalMessages}
-        />
-
-        {/* 快速操作 */}
-        <QuickActions />
+        {/* 今日概览和快速操作 - 并排显示 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <DailyOverview
+            pendingTodos={pendingTodos}
+            totalNotes={totalNotes}
+            totalMessages={totalMessages}
+          />
+          <QuickActions />
+        </div>
 
         {/* 最近活动 */}
         <RecentActivity activities={activities} />
@@ -88,4 +88,3 @@ export default function HomePage() {
     </div>
   );
 }
-
