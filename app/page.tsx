@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBanner from "@/app/components/features/WelcomeBanner";
 import ChatContainer from "@/app/components/features/ChatContainer";
@@ -9,10 +9,52 @@ import { useChatStream } from "@/app/hooks/use-chat-stream";
 import { useToast } from "@/app/hooks/use-toast";
 import type { Message } from "@/app/types";
 import { generateId } from "@/app/lib/utils";
+import { saveMessages, loadMessages } from "@/app/services/message-storage";
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(true);
   const { showToast, ToastComponent } = useToast();
+
+  // 组件挂载时加载历史消息
+  useEffect(() => {
+    const loadHistoryMessages = async () => {
+      try {
+        const historyMessages = await loadMessages();
+        if (historyMessages.length > 0) {
+          setMessages(historyMessages);
+        }
+      } catch (error) {
+        console.error("加载历史消息失败:", error);
+        showToast("加载历史消息失败", 2000);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadHistoryMessages();
+  }, []);
+
+  // 消息变化时保存到 IndexedDB
+  useEffect(() => {
+    // 跳过初始加载时的保存
+    if (isLoading) {
+      return;
+    }
+
+    const saveMessagesDebounced = async () => {
+      try {
+        await saveMessages(messages);
+      } catch (error) {
+        console.error("保存消息失败:", error);
+      }
+    };
+
+    // 使用防抖避免频繁保存
+    const timer = setTimeout(saveMessagesDebounced, 500);
+    return () => clearTimeout(timer);
+  }, [messages, isLoading]);
 
   const { stream, isStreaming, abort } = useChatStream({
     onContent: (fullContent) => {
@@ -56,6 +98,11 @@ export default function Home() {
     async (message: string) => {
       if (!message.trim() || isStreaming) return;
 
+      // 如果在欢迎页面，自动切换到聊天页面
+      if (showWelcome) {
+        setShowWelcome(false);
+      }
+
       // 添加用户消息
       const userMessage: Message = {
         id: generateId(),
@@ -92,8 +139,18 @@ export default function Home() {
         console.error("发送消息失败:", err);
       }
     },
-    [messages, stream, isStreaming]
+    [messages, stream, isStreaming, showWelcome]
   );
+
+  // 进入聊天列表
+  const handleEnterChat = useCallback(() => {
+    setShowWelcome(false);
+  }, []);
+
+  // 返回欢迎页面
+  const handleBackToWelcome = useCallback(() => {
+    setShowWelcome(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white flex flex-col relative overflow-hidden">
@@ -131,8 +188,8 @@ export default function Home() {
       {/* 主内容区域 */}
       <main className="flex-1 flex flex-col min-h-0 relative z-10">
         <AnimatePresence mode="wait">
-          {messages.length === 0 ? (
-            /* 没有消息时，标语区域居中显示，输入框固定在底部 */
+          {showWelcome ? (
+            /* 欢迎页面：标语区域居中显示，输入框固定在底部 */
             <motion.div
               key="welcome"
               initial={{ opacity: 0 }}
@@ -143,19 +200,63 @@ export default function Home() {
             >
               <div className="flex-1 flex flex-col items-center justify-center px-4">
                 <WelcomeBanner />
+                {/* 如果有历史消息，显示进入聊天列表按钮 */}
+                {!isLoading && messages.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="mt-12 flex flex-col items-center gap-4"
+                  >
+                    <motion.button
+                      onClick={handleEnterChat}
+                      className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-medium transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 overflow-hidden"
+                      whileHover={{ y: -2 }}
+                      whileTap={{ y: 0 }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative flex items-center gap-3">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span>继续未完的对话</span>
+                      </div>
+                    </motion.button>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="text-sm text-gray-400"
+                    >
+                      {messages.length} 段珍贵的记忆等待续写
+                    </motion.p>
+                  </motion.div>
+                )}
               </div>
-              {/* 输入框区域 - 固定在底部 */}
-              <div className="flex-shrink-0 px-4 pb-6 pt-4 border-t border-gray-100">
-                <div className="flex flex-col items-center">
-                  <MessageInput
-                    onSubmit={handleMessageSubmit}
-                    disabled={isStreaming}
-                  />
+              {/* 输入框区域 - 只在没有历史消息时显示 */}
+              {(isLoading || messages.length === 0) && (
+                <div className="flex-shrink-0 px-4 pb-6 pt-4 border-t border-gray-100">
+                  <div className="flex flex-col items-center">
+                    <MessageInput
+                      onSubmit={handleMessageSubmit}
+                      disabled={isStreaming}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </motion.div>
           ) : (
-            /* 有消息时，显示聊天容器 */
+            /* 聊天页面：显示聊天容器 */
             <motion.div
               key="chat"
               initial={{ opacity: 0, y: 20 }}
@@ -168,6 +269,7 @@ export default function Home() {
                 onSendMessage={handleMessageSubmit}
                 messages={messages}
                 isStreaming={isStreaming}
+                onBackToWelcome={handleBackToWelcome}
               />
             </motion.div>
           )}
