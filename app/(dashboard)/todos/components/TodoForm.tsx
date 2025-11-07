@@ -99,7 +99,7 @@ export default function TodoForm({
           autoFocus
         />
         <p className="mt-2 text-xs text-gray-400">
-          💡 可输入"明天下午2点开会 #工作"自动识别
+          💡 可输入&ldquo;明天下午2点开会 #工作&rdquo;自动识别
         </p>
       </div>
 

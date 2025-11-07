@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { loadMessages } from "@/app/services/message-storage";
 import { getAllNotes } from "@/app/services/note-storage";
-import { getPendingTodos, getAllTodos } from "@/app/services/todo-storage";
-import type { Message, Note, Todo } from "@/app/types";
+import { getAllTodos } from "@/app/services/todo-storage";
 import { extractPlainText } from "@/app/lib/text-utils";
 
 interface Activity {

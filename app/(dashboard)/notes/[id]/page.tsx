@@ -113,6 +113,7 @@ export default function NoteDetailPage() {
     }, 1000);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [note?.title, note?.content, note?.tags, noteId, isLoading]);
 
   // 切换收藏

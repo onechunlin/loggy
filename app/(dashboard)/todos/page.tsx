@@ -15,7 +15,6 @@ import {
   updateTodo,
   deleteTodo,
   toggleTodoComplete,
-  getOverdueTodos,
 } from "@/app/services/todo-storage";
 import type { Todo } from "@/app/types";
 import { useToast } from "@/app/hooks/use-toast";

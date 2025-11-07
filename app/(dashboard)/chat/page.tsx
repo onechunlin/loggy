@@ -37,6 +37,7 @@ export default function ChatPage() {
     };
 
     loadHistoryMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 消息变化时保存到 IndexedDB
@@ -281,4 +282,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
