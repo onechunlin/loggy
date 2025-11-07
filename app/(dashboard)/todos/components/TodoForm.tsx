@@ -95,7 +95,7 @@ export default function TodoForm({
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={handleQuickAdd}
           placeholder="添加待办事项..."
-          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           autoFocus
         />
         <p className="mt-2 text-xs text-gray-400">
@@ -110,7 +110,7 @@ export default function TodoForm({
           onChange={(e) => setDescription(e.target.value)}
           placeholder="添加描述（可选）"
           rows={3}
-          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
         />
       </div>
 

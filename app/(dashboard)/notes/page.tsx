@@ -17,7 +17,7 @@ export default function NotesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStarred, setFilterStarred] = useState(false);
 
-  // 加载笔记
+  // 延迟加载笔记，避免阻塞渲染
   useEffect(() => {
     async function loadNotes() {
       try {
@@ -30,7 +30,12 @@ export default function NotesPage() {
       }
     }
 
-    loadNotes();
+    // 延迟加载，让页面先渲染
+    const timer = setTimeout(() => {
+      loadNotes();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // 筛选笔记
@@ -120,10 +125,7 @@ export default function NotesPage() {
           {/* 搜索和筛选 */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1">
-              <SearchBar
-                onSearch={setSearchQuery}
-                placeholder="搜索笔记..."
-              />
+              <SearchBar onSearch={setSearchQuery} placeholder="搜索笔记..." />
             </div>
             <motion.button
               onClick={() => setFilterStarred(!filterStarred)}
@@ -143,24 +145,20 @@ export default function NotesPage() {
         {/* 笔记列表 */}
         {filteredNotes.length === 0 ? (
           searchQuery || filterStarred ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-12 sm:py-16"
-            >
+            <div className="text-center py-12 sm:py-16">
               <p className="text-gray-400 text-base sm:text-lg px-4">
                 {searchQuery
                   ? `没有找到包含 "${searchQuery}" 的笔记`
                   : "暂无收藏的笔记"}
               </p>
-            </motion.div>
+            </div>
           ) : (
             <EmptyState onCreateNote={handleCreateNote} />
           )
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {filteredNotes.map((note, index) => (
-              <NoteCard key={note.id} note={note} index={index} />
+            {filteredNotes.map((note) => (
+              <NoteCard key={note.id} note={note} index={0} />
             ))}
           </div>
         )}
@@ -168,4 +166,3 @@ export default function NotesPage() {
     </div>
   );
 }
-

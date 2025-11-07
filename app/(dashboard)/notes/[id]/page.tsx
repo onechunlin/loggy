@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { NoteEditor, TagInput } from "./components";
+import { NoteEditor } from "./components";
 import {
   getNoteById,
   updateNote,
@@ -43,7 +43,6 @@ export default function NoteDetailPage() {
           lastSavedRef.current = JSON.stringify({
             title: loadedNote.title,
             content: loadedNote.content,
-            tags: loadedNote.tags,
           });
         } else {
           showToast("笔记不存在", 2000);
@@ -69,7 +68,6 @@ export default function NoteDetailPage() {
     const currentContent = JSON.stringify({
       title: note.title,
       content: note.content,
-      tags: note.tags,
     });
 
     if (currentContent === lastSavedRef.current) {
@@ -87,7 +85,6 @@ export default function NoteDetailPage() {
         const snapshot = {
           title: note.title,
           content: note.content,
-          tags: note.tags,
         };
 
         const updatedNote = await updateNote(noteId, snapshot);
@@ -114,7 +111,7 @@ export default function NoteDetailPage() {
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [note?.title, note?.content, note?.tags, noteId, isLoading]);
+  }, [note?.title, note?.content, noteId, isLoading]);
 
   // 切换收藏
   const handleToggleStar = async () => {
@@ -243,21 +240,9 @@ export default function NoteDetailPage() {
         </div>
       </div>
 
-      {/* 底部：标签和元信息 */}
+      {/* 底部：元信息 */}
       <div className="flex-shrink-0 border-t border-gray-100 px-4 sm:px-6 py-3 sm:py-4">
-        <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
-          {/* 标签输入 */}
-          <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-              标签
-            </label>
-            <TagInput
-              tags={note.tags}
-              onTagsChange={(tags) => setNote({ ...note, tags })}
-            />
-          </div>
-
-          {/* 元信息 */}
+        <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-gray-400">
             <span>创建于 {formatDateTime(note.createdAt)}</span>
             <span className="hidden sm:inline">·</span>

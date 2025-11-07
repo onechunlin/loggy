@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { memo, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { formatRelativeTime } from "@/app/lib/date-utils";
 import { truncate } from "@/app/lib/text-utils";
@@ -21,7 +21,7 @@ interface RecentActivityProps {
 /**
  * 最近活动组件
  */
-export default function RecentActivity({ activities }: RecentActivityProps) {
+function RecentActivity({ activities }: RecentActivityProps) {
   const router = useRouter();
 
   const getActivityIcon = (type: Activity["type"]) => {
@@ -46,31 +46,26 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
     }
   };
 
+  const displayedActivities = useMemo(
+    () => activities.slice(0, 5),
+    [activities]
+  );
+
   if (activities.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        className="mb-8"
-      >
+      <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           🕐 最近活动
         </h2>
         <div className="bg-gray-50 rounded-2xl p-8 text-center">
           <p className="text-gray-400">暂无活动记录</p>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.4 }}
-      className="mb-8"
-    >
+    <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">🕐 最近活动</h2>
         {activities.length > 5 && (
@@ -80,14 +75,11 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
         )}
       </div>
       <div className="space-y-3">
-        {activities.slice(0, 5).map((activity, index) => (
-          <motion.div
+        {displayedActivities.map((activity) => (
+          <div
             key={activity.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.5 + index * 0.05 }}
             onClick={() => router.push(activity.path)}
-            className="bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-200 hover:shadow-md transition-all cursor-pointer group"
+            className="bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-200 hover:shadow-md transition-all cursor-pointer group active:scale-[0.98]"
           >
             <div className="flex items-start gap-3">
               <span className="text-2xl flex-shrink-0">
@@ -116,10 +108,12 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
                 <span className="text-gray-400">→</span>
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }
+
+export default memo(RecentActivity);
 

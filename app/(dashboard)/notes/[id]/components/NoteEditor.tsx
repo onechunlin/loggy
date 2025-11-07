@@ -45,16 +45,12 @@ export default function NoteEditor({
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
           placeholder="开始写点什么..."
-          className="w-full h-full text-sm sm:text-base text-gray-700 bg-transparent border-none outline-none resize-none placeholder-gray-300 leading-relaxed"
+          className="w-full h-full text-base text-gray-700 bg-transparent border-none outline-none resize-none placeholder-gray-300 leading-relaxed"
         />
       </div>
 
       {/* 底部状态栏 */}
-      <div className="px-4 sm:px-8 py-3 sm:py-4 border-t border-gray-100 flex items-center justify-between text-xs sm:text-sm text-gray-500">
-        <div>
-          <span className="hidden sm:inline">Markdown 格式支持</span>
-          <span className="sm:hidden">Markdown</span>
-        </div>
+      <div className="px-4 sm:px-8 py-3 sm:py-4 border-t border-gray-100 flex items-center justify-end text-xs sm:text-sm text-gray-500">
         <div>
           <span>{wordCount} 字</span>
         </div>

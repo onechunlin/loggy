@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { memo, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Note } from "@/app/types";
 import { formatRelativeTime } from "@/app/lib/date-utils";
@@ -14,23 +14,27 @@ interface NoteCardProps {
 /**
  * 笔记卡片组件
  */
-export default function NoteCard({ note, index }: NoteCardProps) {
+function NoteCard({ note }: NoteCardProps) {
   const router = useRouter();
-  const summary = generateSummary(note.content, 120);
-  const wordCount = countWords(note.content);
+  
+  const summary = useMemo(
+    () => generateSummary(note.content, 120),
+    [note.content]
+  );
+  
+  const wordCount = useMemo(
+    () => countWords(note.content),
+    [note.content]
+  );
 
   const handleClick = () => {
     router.push(`/notes/${note.id}`);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      whileHover={{ scale: 1.02, y: -4 }}
+    <div
       onClick={handleClick}
-      className="group bg-white rounded-2xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-xl transition-all cursor-pointer"
+      className="group bg-white rounded-2xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-xl transition-all cursor-pointer active:scale-[0.98]"
     >
       {/* 标题和收藏 */}
       <div className="flex items-start justify-between mb-3">
@@ -38,13 +42,9 @@ export default function NoteCard({ note, index }: NoteCardProps) {
           {note.title}
         </h3>
         {note.isStarred && (
-          <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="text-xl ml-2 flex-shrink-0"
-          >
+          <span className="text-xl ml-2 flex-shrink-0">
             ⭐
-          </motion.span>
+          </span>
         )}
       </div>
 
@@ -82,7 +82,9 @@ export default function NoteCard({ note, index }: NoteCardProps) {
           </span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
+
+export default memo(NoteCard);
 
