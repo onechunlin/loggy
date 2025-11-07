@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { memo } from "react";
 import { useRouter } from "next/navigation";
 
 interface QuickAction {
@@ -42,27 +42,18 @@ const quickActions: QuickAction[] = [
 /**
  * 快速操作组件
  */
-export default function QuickActions() {
+function QuickActions() {
   const router = useRouter();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.6 }}
-    >
+    <div>
       <h2 className="text-base font-semibold text-gray-900 mb-3">⚡ 快速操作</h2>
       <div className="grid grid-cols-3 gap-2">
-        {quickActions.map((action, index) => (
-          <motion.button
+        {quickActions.map((action) => (
+          <button
             key={action.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 + index * 0.1 }}
             onClick={() => router.push(action.path)}
-            className="group relative p-3 bg-white rounded-xl border border-gray-100 hover:border-transparent hover:shadow-lg transition-all duration-300 overflow-hidden text-center"
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
+            className="group relative p-3 bg-white rounded-xl border border-gray-100 hover:border-transparent hover:shadow-lg transition-all duration-300 overflow-hidden text-center active:scale-95"
           >
             {/* 渐变背景 */}
             <div
@@ -71,13 +62,9 @@ export default function QuickActions() {
 
             {/* 内容 */}
             <div className="relative z-10">
-              <motion.div
-                className="text-2xl mb-2"
-                whileHover={{ scale: 1.2, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
+              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
                 {action.icon}
-              </motion.div>
+              </div>
               <h3 className="text-xs font-semibold text-gray-900 mb-0.5">
                 {action.title}
               </h3>
@@ -88,10 +75,12 @@ export default function QuickActions() {
             <div className="absolute top-2 right-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
               →
             </div>
-          </motion.button>
+          </button>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }
+
+export default memo(QuickActions);
 

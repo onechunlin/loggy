@@ -20,8 +20,9 @@ export default function ChatPage() {
   const [showWelcome, setShowWelcome] = useState(true);
   const { showToast, ToastComponent } = useToast();
 
-  // 组件挂载时加载历史消息
+  // 组件挂载时延迟加载历史消息，避免阻塞渲染
   useEffect(() => {
+    // 使用 requestIdleCallback 或 setTimeout 延迟加载，避免阻塞首次渲染
     const loadHistoryMessages = async () => {
       try {
         const historyMessages = await loadMessages();
@@ -36,7 +37,12 @@ export default function ChatPage() {
       }
     };
 
-    loadHistoryMessages();
+    // 延迟加载，让页面先渲染
+    const timer = setTimeout(() => {
+      loadHistoryMessages();
+    }, 0);
+
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -158,32 +164,10 @@ export default function ChatPage() {
 
   return (
     <div className="h-full bg-white flex flex-col relative overflow-hidden">
-      {/* 背景装饰元素 */}
+      {/* 背景装饰元素 - 使用 CSS 动画替代 framer-motion 提升性能 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full blur-3xl opacity-30"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-pink-100 to-blue-100 rounded-full blur-3xl opacity-30"
-          animate={{
-            scale: [1, 1.3, 1],
-            rotate: [0, -90, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full blur-3xl opacity-30 animate-pulse-slow" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-pink-100 to-blue-100 rounded-full blur-3xl opacity-30 animate-pulse-slower" />
       </div>
 
       {/* Toast 提示 */}

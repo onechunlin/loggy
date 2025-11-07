@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, memo, useMemo } from "react";
 import type { Message } from "@/app/types";
 import MessageInput from "@/app/components/ui/MessageInput";
 import AssistantMessage from "@/app/components/features/AssistantMessage";
@@ -12,15 +11,79 @@ interface MessageListProps {
 }
 
 /**
+ * 单条消息组件
+ */
+const MessageItem = memo(
+  ({
+    message,
+    isStreaming,
+    isLastMessage,
+  }: {
+    message: Message;
+    isStreaming: boolean;
+    isLastMessage: boolean;
+  }) => {
+    const showThinking =
+      message.role === "assistant" && isLastMessage && isStreaming;
+
+    return (
+      <div
+        className={`flex ${
+          message.role === "user" ? "justify-end" : "justify-start"
+        }`}
+      >
+        {message.role === "assistant" ? (
+          <div className="max-w-[80%]">
+            <AssistantMessage
+              content={message.content}
+              isStreaming={showThinking}
+            />
+          </div>
+        ) : (
+          <div className="max-w-[80%] rounded-2xl px-4 py-3 transition-all bg-blue-500 text-white">
+            <p className="text-sm whitespace-pre-wrap break-words">
+              {message.content}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
+MessageItem.displayName = "MessageItem";
+
+/**
  * 消息列表组件
  */
-function MessageList({ messages, isStreaming }: MessageListProps) {
+const MessageList = memo(({ messages, isStreaming }: MessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevMessagesLengthRef = useRef(0);
 
   useEffect(() => {
-    // 自动滚动到底部
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    // 只在消息数量增加时滚动，避免频繁滚动
+    if (messages.length > prevMessagesLengthRef.current) {
+      // 使用 requestAnimationFrame 延迟滚动，避免阻塞渲染
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
+    }
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages.length]);
+
+  const messageItems = useMemo(() => {
+    return messages.map((message, index) => {
+      const isLastMessage = index === messages.length - 1;
+      return (
+        <MessageItem
+          key={message.id}
+          message={message}
+          isStreaming={isStreaming}
+          isLastMessage={isLastMessage}
+        />
+      );
+    });
+  }, [messages, isStreaming]);
 
   if (messages.length === 0) {
     return null;
@@ -28,49 +91,13 @@ function MessageList({ messages, isStreaming }: MessageListProps) {
 
   return (
     <div className="w-full max-w-2xl space-y-4 mb-6">
-      <AnimatePresence initial={false}>
-        {messages.map((message, index) => {
-          // 判断是否是最后一条消息且为 assistant 消息
-          const isLastMessage = index === messages.length - 1;
-          const showThinking =
-            message.role === "assistant" && isLastMessage && isStreaming;
-
-          return (
-            <motion.div
-              key={message.id}
-              className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
-              }`}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{
-                duration: 0.3,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-            >
-              {message.role === "assistant" ? (
-                <div className="max-w-[80%]">
-                  <AssistantMessage
-                    content={message.content}
-                    isStreaming={showThinking}
-                  />
-                </div>
-              ) : (
-                <div className="max-w-[80%] rounded-2xl px-4 py-3 transition-all bg-blue-500 text-white">
-                  <p className="text-sm whitespace-pre-wrap break-words">
-                    {message.content}
-                  </p>
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
+      {messageItems}
       <div ref={messagesEndRef} />
     </div>
   );
-}
+});
+
+MessageList.displayName = "MessageList";
 
 interface ChatContainerProps {
   onSendMessage: (message: string) => void;
