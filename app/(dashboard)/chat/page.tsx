@@ -11,7 +11,10 @@ import type { Message } from "@/app/types";
 import { generateId } from "@/app/lib/utils";
 import { saveMessages, loadMessages } from "@/app/services/message-storage";
 
-export default function Home() {
+/**
+ * 对话页面
+ */
+export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -56,7 +59,7 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [messages, isLoading]);
 
-  const { stream, isStreaming, abort } = useChatStream({
+  const { stream, isStreaming } = useChatStream({
     onContent: (fullContent) => {
       // 直接更新最后一条消息的完整内容
       setMessages((prev) => {
@@ -278,3 +281,4 @@ export default function Home() {
     </div>
   );
 }
+
