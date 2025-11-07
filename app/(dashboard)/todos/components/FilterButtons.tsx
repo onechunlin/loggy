@@ -31,7 +31,7 @@ export default function FilterButtons({
   ];
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+    <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
       {filters.map((filter) => {
         const isActive = currentFilter === filter.type;
         const count = counts[filter.type];
@@ -67,4 +67,3 @@ export default function FilterButtons({
     </div>
   );
 }
-
