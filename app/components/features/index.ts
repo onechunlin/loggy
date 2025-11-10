@@ -4,4 +4,4 @@
 export { default as WelcomeBanner } from "./WelcomeBanner";
 export { default as ChatContainer } from "./ChatContainer";
 export { default as AssistantMessage } from "./AssistantMessage";
-export { AIAssistant } from "./ai-assistant";
+export { default as AIAssistant } from "./AIAssistant";

@@ -1,7 +1,9 @@
 "use client";
 
+import { FormEventCenter, FormEventConfig } from "@/app/events";
 import { Form, Input, TextArea, Button } from "antd-mobile";
 import type { FormItemProps } from "antd-mobile/es/components/form";
+import { useEffect, useId } from "react";
 
 /**
  * 表单字段配置
@@ -40,6 +42,18 @@ export default function DynamicForm({
   layout = "vertical",
 }: DynamicFormProps) {
   const [form] = Form.useForm();
+  const formId = useId();
+
+  useEffect(() => {
+    FormEventCenter.registerItems(formId, items);
+    FormEventCenter.on(formId, (config: FormEventConfig) => {
+      form.setFieldsValue(config);
+    });
+    return () => {
+      FormEventCenter.unregisterItems(formId);
+      FormEventCenter.off(formId);
+    };
+  }, []);
 
   const handleFinish = (values: Record<string, any>) => {
     onSubmit?.(values);

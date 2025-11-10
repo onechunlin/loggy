@@ -39,9 +39,12 @@ class FormEvent {
   getItems(formId: string): FormItem[] {
     return this.formId2ItemsMap.get(formId) || [];
   }
+
+  unregisterItems(formId: string) {
+    this.formId2ItemsMap.delete(formId);
+  }
 }
 
 const FormEventCenter = new FormEvent();
 
 export { FormEventCenter };
-
