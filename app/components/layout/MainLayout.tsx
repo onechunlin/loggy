@@ -1,7 +1,14 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import TabBar from "./TabBar";
+import { AIAssistant } from "@/app/components/features";
+import { NavigationConfirmModal } from "@/app/components/ui";
+import {
+  NavigatePageEventCenter,
+  NavigatePageEventName,
+  type NavigatePageEventConfig,
+} from "@/app/events/navigatePageEvent";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -16,6 +23,32 @@ export default function MainLayout({
   children,
   showTabBar = true,
 }: MainLayoutProps) {
+  const [pendingNavigationUrl, setPendingNavigationUrl] = useState<
+    string | null
+  >(null);
+
+  // 监听导航事件
+  useEffect(() => {
+    const handleNavigate = (config: NavigatePageEventConfig) => {
+      setPendingNavigationUrl(config.pagePath);
+    };
+
+    NavigatePageEventCenter.on(
+      NavigatePageEventName.NavigateToPage,
+      handleNavigate
+    );
+
+    return () => {
+      NavigatePageEventCenter.off(NavigatePageEventName.NavigateToPage);
+    };
+  }, []);
+
+  // 取消跳转
+  const handleCancelNavigation = () => {
+    console.log("❌ 用户取消跳转");
+    setPendingNavigationUrl(null);
+  };
+
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
       {/* 主内容区域 - 弹性布局 */}
@@ -23,6 +56,18 @@ export default function MainLayout({
 
       {/* 底部导航栏 */}
       {showTabBar && <TabBar />}
+
+      {/* AI 助手 */}
+      <AIAssistant />
+
+      {/* 确认跳转弹窗 */}
+      {pendingNavigationUrl && (
+        <NavigationConfirmModal
+          url={pendingNavigationUrl}
+          countdownSeconds={3}
+          onClose={handleCancelNavigation}
+        />
+      )}
     </div>
   );
 }

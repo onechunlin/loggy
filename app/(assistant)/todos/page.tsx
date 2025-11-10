@@ -14,7 +14,7 @@ import {
   updateTodo,
   deleteTodo,
   toggleTodoComplete,
-} from "@/app/services/todo-storage";
+} from "@/app/lib/client";
 import type { Todo } from "@/app/types";
 import { useToast } from "@/app/hooks/use-toast";
 

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { NoteCard, EmptyState, SearchBar } from "./components";
-import { getAllNotes, createNote } from "@/app/services/note-storage";
+import { getAllNotes, createNote } from "@/app/lib/client";
 import type { Note } from "@/app/types";
 
 /**

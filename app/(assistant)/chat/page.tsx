@@ -9,7 +9,7 @@ import { useChatStream } from "@/app/hooks/use-chat-stream";
 import { useToast } from "@/app/hooks/use-toast";
 import type { Message } from "@/app/types";
 import { generateId } from "@/app/lib/utils";
-import { saveMessages, loadMessages } from "@/app/services/message-storage";
+import { saveMessages, loadMessages } from "@/app/lib/client";
 
 /**
  * 对话页面

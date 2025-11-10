@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
-import { streamChat } from "@/app/services/openai-service";
+import { streamChat, chat } from "@/app/lib/server";
 import type { ChatRequestParams } from "@/app/types";
 
 /**
  * POST /api/chat
- * SSE 流式聊天接口
+ * SSE 流式聊天接口 或 非流式聊天接口（用于工具调用）
  *
  * 请求体格式：
  * {
@@ -29,6 +29,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 如果 stream 为 false，返回非流式响应（用于工具调用）
+    if (body.stream === false) {
+      const response = await chat(body);
+      return new Response(JSON.stringify(response), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 默认使用流式响应
     // 创建 SSE 流
     const encoder = new TextEncoder();
     const stream = new ReadableStream({

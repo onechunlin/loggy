@@ -93,3 +93,41 @@ export async function* streamChat(
     }
   }
 }
+
+/**
+ * 非流式聊天请求（用于工具调用）
+ * @param params 聊天请求参数
+ * @returns 返回完整的响应对象
+ */
+export async function chat(
+  params: ChatRequestParams & { stream?: boolean }
+): Promise<any> {
+  const client = createDeepseekClient();
+
+  const {
+    model = "deepseek-chat",
+    messages,
+    temperature,
+    max_tokens,
+    top_p,
+    frequency_penalty,
+    presence_penalty,
+    stream = false,
+    ...restParams
+  } = params;
+
+  const requestParams = {
+    model,
+    messages,
+    temperature,
+    max_tokens,
+    top_p,
+    frequency_penalty,
+    presence_penalty,
+    stream: stream as boolean,
+    ...restParams,
+  };
+
+  const response = await client.chat.completions.create(requestParams);
+  return response;
+}

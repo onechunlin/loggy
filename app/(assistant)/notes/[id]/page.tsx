@@ -9,7 +9,7 @@ import {
   updateNote,
   deleteNote,
   toggleNoteStar,
-} from "@/app/services/note-storage";
+} from "@/app/lib/client";
 import type { Note } from "@/app/types";
 import { formatDateTime } from "@/app/lib/date-utils";
 import { useToast } from "@/app/hooks/use-toast";

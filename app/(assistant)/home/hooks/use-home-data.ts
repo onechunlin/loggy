@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { loadMessages } from "@/app/services/message-storage";
-import { getAllNotes } from "@/app/services/note-storage";
-import { getAllTodos } from "@/app/services/todo-storage";
+import { loadMessages } from "@/app/lib/client";
+import { getAllNotes } from "@/app/lib/client";
+import { getAllTodos } from "@/app/lib/client";
 import { extractPlainText } from "@/app/lib/text-utils";
 
 interface Activity {
