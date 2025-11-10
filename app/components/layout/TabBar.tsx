@@ -79,13 +79,11 @@ export default function TabBar() {
               href={item.path}
               className={`
                 relative w-full h-full flex flex-col items-center justify-center gap-1
-                transition-all duration-200
-                ${
-                  isActive
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }
-              `}
+              transition-all duration-200
+              ${
+                isActive ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+              }
+            `}
             >
               {/* 图标 */}
               <span className="text-2xl sm:text-3xl">{item.icon}</span>

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "antd-mobile/es/global";
 import {
   APP_NAME,
   APP_DEFAULT_TITLE,
