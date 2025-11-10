@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { memo } from "react";
 import type { Todo } from "@/app/types";
 import { formatRelativeTime } from "@/app/lib/date-utils";
 
@@ -15,9 +15,8 @@ interface TodoCardProps {
 /**
  * 待办卡片组件
  */
-export default function TodoCard({
+function TodoCard({
   todo,
-  index,
   onToggle,
   onEdit,
   onDelete,
@@ -28,10 +27,7 @@ export default function TodoCard({
     new Date(todo.dueDate) < new Date();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+    <div
       className={`group bg-white rounded-xl p-4 border transition-all ${
         todo.completed
           ? "border-gray-200 opacity-60"
@@ -42,18 +38,16 @@ export default function TodoCard({
     >
       <div className="flex items-start gap-3">
         {/* 复选框 */}
-        <motion.button
+        <button
           onClick={() => onToggle(todo.id)}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+          className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all active:scale-90 ${
             todo.completed
               ? "bg-green-500 border-green-500"
               : "border-gray-300 hover:border-blue-500"
           }`}
         >
           {todo.completed && <span className="text-white text-sm">✓</span>}
-        </motion.button>
+        </button>
 
         {/* 内容区 */}
         <div className="flex-1 min-w-0">
@@ -121,7 +115,9 @@ export default function TodoCard({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
+
+export default memo(TodoCard);
 

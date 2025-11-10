@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   TodoCard,
   TodoForm,
@@ -30,7 +29,7 @@ export default function TodosPage() {
   const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
   const { showToast, ToastComponent } = useToast();
 
-  // 加载待办
+  // 延迟加载待办，避免阻塞渲染
   useEffect(() => {
     async function loadTodos() {
       try {
@@ -43,7 +42,12 @@ export default function TodosPage() {
       }
     }
 
-    loadTodos();
+    // 延迟加载，让页面先渲染
+    const timer = setTimeout(() => {
+      loadTodos();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // 筛选待办
@@ -75,8 +79,7 @@ export default function TodosPage() {
     const active = todos.filter((t) => !t.completed).length;
     const completed = todos.filter((t) => t.completed).length;
     const overdue = todos.filter(
-      (t) =>
-        !t.completed && t.dueDate && new Date(t.dueDate) < new Date()
+      (t) => !t.completed && t.dueDate && new Date(t.dueDate) < new Date()
     ).length;
 
     return {
@@ -158,20 +161,10 @@ export default function TodosPage() {
   if (isLoading) {
     return (
       <div className="h-full bg-gradient-to-br from-gray-50 to-orange-50/30 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center"
-        >
-          <motion.div
-            className="text-6xl mb-4"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          >
-            ✅
-          </motion.div>
+        <div className="text-center">
+          <div className="text-6xl mb-4">✅</div>
           <p className="text-gray-400">加载中...</p>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -199,15 +192,13 @@ export default function TodosPage() {
               </p>
             </div>
             {!showForm && (
-              <motion.button
+              <button
                 onClick={() => setShowForm(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base active:scale-95"
               >
                 <span className="text-lg sm:text-xl">+</span>
                 <span>新建待办</span>
-              </motion.button>
+              </button>
             )}
           </div>
 
@@ -220,40 +211,34 @@ export default function TodosPage() {
         </div>
 
         {/* 表单 */}
-        <AnimatePresence>
-          {showForm && (
-            <TodoForm
-              editingTodo={editingTodo}
-              onSubmit={handleSubmit}
-              onCancel={handleCancelForm}
-            />
-          )}
-        </AnimatePresence>
+        {showForm && (
+          <TodoForm
+            editingTodo={editingTodo}
+            onSubmit={handleSubmit}
+            onCancel={handleCancelForm}
+          />
+        )}
 
         {/* 待办列表 */}
         {filteredTodos.length === 0 ? (
           todos.length === 0 ? (
             <EmptyState onCreateTodo={() => setShowForm(true)} />
           ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-16"
-            >
+            <div className="text-center py-16">
               <p className="text-gray-400 text-lg">
                 {currentFilter === "completed" && "还没有完成的待办"}
                 {currentFilter === "active" && "所有待办都已完成！🎉"}
                 {currentFilter === "overdue" && "没有逾期的待办"}
               </p>
-            </motion.div>
+            </div>
           )
         ) : (
           <div className="space-y-3">
-            {filteredTodos.map((todo, index) => (
+            {filteredTodos.map((todo) => (
               <TodoCard
                 key={todo.id}
                 todo={todo}
-                index={index}
+                index={0}
                 onToggle={handleToggle}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
@@ -265,4 +250,3 @@ export default function TodosPage() {
     </div>
   );
 }
-

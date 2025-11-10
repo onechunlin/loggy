@@ -40,6 +40,12 @@ const navItems: NavItem[] = [
     label: "待办",
     path: "/todos",
   },
+  {
+    id: "playground",
+    icon: "🎨",
+    label: "实验",
+    path: "/playground",
+  },
 ];
 
 /**
