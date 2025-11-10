@@ -123,7 +123,14 @@ pnpm start    # 启动生产服务器
 pnpm lint     # 运行 ESLint 代码检查
 ```
 
-## 📚 了解更多
+## 📚 文档
+
+### 项目文档
+
+- [指令中心架构说明](./docs/command-center.md) - 了解指令中心的设计和使用方法
+- [服务层架构说明](./app/lib/README.md) - 了解服务端和客户端服务的组织方式
+
+### Next.js 文档
 
 要了解更多关于 Next.js 的信息，请查看以下资源：
 
