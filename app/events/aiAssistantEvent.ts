@@ -1,5 +1,6 @@
 export interface AIAssistantEventConfig {
   query?: string; // 初始查询文本
+  immediate?: boolean; // 是否立即执行
 }
 
 export enum AIAssistantEventName {

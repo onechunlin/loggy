@@ -7,6 +7,6 @@ export { NavigateCommand } from "./NavigateCommand";
 export {
   ChangeFontSizeCommand,
   ChangeFontColorCommand,
+  ChangeFontWeightCommand,
 } from "./FontStyleCommand";
 export { FormCommand, generateFormCommands } from "./FormCommand";
-

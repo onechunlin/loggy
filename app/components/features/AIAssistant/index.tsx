@@ -6,6 +6,7 @@ import {
   NavigateCommand,
   ChangeFontSizeCommand,
   ChangeFontColorCommand,
+  ChangeFontWeightCommand,
   generateFormCommands,
 } from "@/app/utils/commandCenter/commands";
 import { aiAgentService, AgentResponse } from "@/app/lib/client";
@@ -41,6 +42,7 @@ export default function AIAssistant() {
       new NavigateCommand(),
       new ChangeFontSizeCommand(),
       new ChangeFontColorCommand(),
+      new ChangeFontWeightCommand(),
     ]);
 
     // 注册表单指令（动态生成）
@@ -52,12 +54,19 @@ export default function AIAssistant() {
     );
 
     // 监听打开 AIAssistant 事件
-    const handleOpenAssistant = (config: { query?: string }) => {
+    const handleOpenAssistant = (config: {
+      query?: string;
+      immediate?: boolean;
+    }) => {
       setIsModalVisible(true);
       setQuery(config.query || "");
-      setIsAnalyzing(false);
+      setIsAnalyzing(config.immediate || false);
       setToolExecutions([]);
       setAiReplyContent("");
+
+      if (config.immediate && config.query) {
+        handleSubmit(config.query);
+      }
     };
 
     AIAssistantEventCenter.on(
@@ -79,6 +88,7 @@ export default function AIAssistant() {
       navigate_to_page: "页面跳转",
       change_font_size: "调整字体大小",
       change_font_color: "调整字体颜色",
+      change_font_weight: "调整字体字重",
     };
 
     if (toolName.startsWith("change_form_values")) {
@@ -252,20 +262,14 @@ export default function AIAssistant() {
 
   // 用户提交问题
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const trimmedQuery = query.trim();
-      if (!trimmedQuery) {
-        return;
-      }
-
+    async (query: string) => {
       setIsAnalyzing(true);
       setAiReplyContent("");
       setToolExecutions([]);
 
-      await callAI(trimmedQuery);
+      await callAI(query);
     },
-    [query, callAI]
+    [callAI]
   );
 
   return (
@@ -350,7 +354,15 @@ export default function AIAssistant() {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!query.trim()) {
+                    return;
+                  }
+                  handleSubmit(query);
+                }}
+              >
                 <div className="mb-4">
                   <textarea
                     value={query}

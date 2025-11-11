@@ -18,6 +18,13 @@ const demos: DemoItem[] = [
     icon: "🤖",
     path: "/demos/ai-form",
   },
+  {
+    id: "ai-text",
+    title: "AI 文本",
+    description: "支持通过 AI 助手动态改变字体大小和颜色等",
+    icon: "📝",
+    path: "/demos/ai-text",
+  },
 ];
 
 /**

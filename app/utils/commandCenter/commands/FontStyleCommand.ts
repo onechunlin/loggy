@@ -85,3 +85,55 @@ export class ChangeFontColorCommand implements CommandHandler {
     FontStyleEventCenter.emit(`changeColor-${content}`, { color });
   }
 }
+
+/**
+ * 字重调整指令处理器
+ */
+export class ChangeFontWeightCommand implements CommandHandler {
+  tool = {
+    type: "function" as const,
+    function: {
+      name: "change_font_weight",
+      description:
+        '字重调整工具，用于调整字体粗细。支持字符串值（如"bold"、"normal"、"lighter"、"bolder"）或数字值（100-900，100最细，900最粗，400为normal，700为bold）。用户可以通过语音或文字说明调整字重，如"把xxx加粗"、"把xxx改为粗体"、"把xxx改为细体"等。',
+      parameters: {
+        type: "object",
+        properties: {
+          weight: {
+            oneOf: [
+              {
+                type: "string",
+                enum: ["normal", "bold", "lighter", "bolder"],
+                description:
+                  '字重的字符串值，用于"加粗"、"变细"等场景。normal=正常，bold=粗体，lighter=更细，bolder=更粗',
+              },
+              {
+                type: "number",
+                enum: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+                description:
+                  "字重的数字值，用于精确控制。100最细，400为normal，700为bold，900最粗",
+              },
+            ],
+          },
+          content: {
+            type: "string",
+            description: "需要调整字重的内容",
+            enum: FontStyleEventCenter.getTextEnums(),
+          },
+        },
+        required: ["content", "weight"],
+      },
+    },
+  };
+
+  /**
+   * 执行字重调整
+   */
+  execute(args: Record<string, any>): void {
+    const { weight, content } = args as {
+      weight: string | number;
+      content: string;
+    };
+    FontStyleEventCenter.emit(`changeWeight-${content}`, { weight });
+  }
+}
