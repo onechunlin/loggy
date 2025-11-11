@@ -7,11 +7,13 @@ interface FormItem {
   options?: Array<{ value: string; label: string }>;
 }
 
+type FormEventCallback = (config: FormEventConfig) => void;
+
 class FormEvent {
-  private eventMap: Map<string, Function[]> = new Map();
+  private eventMap: Map<string, FormEventCallback[]> = new Map();
   private formId2ItemsMap: Map<string, FormItem[]> = new Map();
 
-  on(formId: string, callback: Function) {
+  on(formId: string, callback: FormEventCallback) {
     const callbacks = this.eventMap.get(formId) || [];
     callbacks.push(callback);
     this.eventMap.set(formId, callbacks);

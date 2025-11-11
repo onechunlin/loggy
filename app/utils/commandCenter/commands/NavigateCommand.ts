@@ -59,7 +59,7 @@ export class NavigateCommand implements CommandHandler {
    */
   private generatePageToolDescription(): string {
     const scenarios = Object.entries(PAGE_ROUTES)
-      .map(([_, route]) => {
+      .map(([_path, route]) => {
         return `${route.name}（${route.description.split("、")[0]}）`;
       })
       .join("、");

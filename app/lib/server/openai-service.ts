@@ -41,7 +41,7 @@ export async function* streamChat(
     top_p,
     frequency_penalty,
     presence_penalty,
-    stream: streamParam,
+    stream: _streamParam,
     ...restParams
   } = params;
 

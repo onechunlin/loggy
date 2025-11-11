@@ -53,7 +53,8 @@ export default function DynamicForm({
       FormEventCenter.unregisterItems(formId);
       FormEventCenter.off(formId);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formId]);
 
   const handleFinish = (values: Record<string, any>) => {
     onSubmit?.(values);

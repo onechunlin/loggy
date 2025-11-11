@@ -4,10 +4,12 @@ export interface FontStyleEventConfig {
   color?: string; // 颜色
 }
 
-class FontStyleEvent {
-  private eventMap: Map<string, Function[]> = new Map();
+type FontStyleEventCallback = (config: FontStyleEventConfig) => void;
 
-  on(eventName: string, callback: Function) {
+class FontStyleEvent {
+  private eventMap: Map<string, FontStyleEventCallback[]> = new Map();
+
+  on(eventName: string, callback: FontStyleEventCallback) {
     const callbacks = this.eventMap.get(eventName) || [];
     callbacks.push(callback);
     this.eventMap.set(eventName, callbacks);

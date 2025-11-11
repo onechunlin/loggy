@@ -6,10 +6,13 @@ export enum NavigatePageEventName {
   NavigateToPage = "navigateToPage",
 }
 
-class NavigatePageEvent {
-  private eventMap: Map<NavigatePageEventName, Function[]> = new Map();
+type NavigatePageEventCallback = (config: NavigatePageEventConfig) => void;
 
-  on(eventName: NavigatePageEventName, callback: Function) {
+class NavigatePageEvent {
+  private eventMap: Map<NavigatePageEventName, NavigatePageEventCallback[]> =
+    new Map();
+
+  on(eventName: NavigatePageEventName, callback: NavigatePageEventCallback) {
     const callbacks = this.eventMap.get(eventName) || [];
     callbacks.push(callback);
     this.eventMap.set(eventName, callbacks);
@@ -30,4 +33,3 @@ class NavigatePageEvent {
 const NavigatePageEventCenter = new NavigatePageEvent();
 
 export { NavigatePageEventCenter };
-

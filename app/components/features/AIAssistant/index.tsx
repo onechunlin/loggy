@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { CommandCenter, CommandResult } from "@/app/utils/commandCenter";
-import type { ToolCall } from "@/app/utils/commandCenter/types";
 import {
   NavigateCommand,
   ChangeFontSizeCommand,
@@ -25,7 +24,7 @@ export default function AIAssistant() {
   const [query, setQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [toolExecutions, setToolExecutions] = useState<ToolExecutionStatus[]>(
-    [],
+    []
   );
   const [aiReplyContent, setAiReplyContent] = useState("");
 
@@ -45,7 +44,7 @@ export default function AIAssistant() {
 
     console.log(
       `✅ 已注册 ${CommandCenter.size} 个指令:`,
-      CommandCenter.getCommandNames(),
+      CommandCenter.getCommandNames()
     );
 
     // 组件卸载时清理
@@ -104,7 +103,7 @@ export default function AIAssistant() {
           toolName: toolCall.function.name,
           displayName: getToolDisplayName(toolCall.function.name),
           status: "pending" as const,
-        }),
+        })
       );
 
       setToolExecutions(initialToolExecutions);
@@ -120,13 +119,16 @@ export default function AIAssistant() {
       const commandResults: CommandResult[] = [];
       for (let index = 0; index < toolCalls.length; index++) {
         const toolCall = toolCalls[index];
-        console.log(`📝 工具 ${index + 1}/${toolCalls.length}:`, toolCall.function.name);
+        console.log(
+          `📝 工具 ${index + 1}/${toolCalls.length}:`,
+          toolCall.function.name
+        );
 
         // 更新为执行中状态
         setToolExecutions((prev) =>
           prev.map((item, i) =>
-            i === index ? { ...item, status: "executing" as const } : item,
-          ),
+            i === index ? { ...item, status: "executing" as const } : item
+          )
         );
 
         // 延迟一下让用户看到执行状态
@@ -139,8 +141,8 @@ export default function AIAssistant() {
         // 更新为完成状态
         setToolExecutions((prev) =>
           prev.map((item, i) =>
-            i === index ? { ...item, status: "completed" as const } : item,
-          ),
+            i === index ? { ...item, status: "completed" as const } : item
+          )
         );
 
         // 延迟一下再执行下一个工具
@@ -159,7 +161,7 @@ export default function AIAssistant() {
         response,
       };
     },
-    [getToolDisplayName],
+    [getToolDisplayName]
   );
 
   // 调用AI接口
@@ -183,13 +185,15 @@ export default function AIAssistant() {
 
         // 🎯 从指令中心获取所有已注册的工具
         const neededTools = toolCalls.toolCalls.map(
-          (toolCall) => toolCall.function.name,
+          (toolCall) => toolCall.function.name
         );
         const tools = CommandCenter.getTools().filter((tool) =>
-          neededTools.includes(tool.function.name),
+          neededTools.includes(tool.function.name)
         );
         console.log(
-          `📦 需要调用的工具: ${neededTools.join(", ")}，筛选后工具数量: ${tools.length}`,
+          `📦 需要调用的工具: ${neededTools.join(", ")}，筛选后工具数量: ${
+            tools.length
+          }`
         );
 
         // 调用 AI Agent 服务，传入可用工具
@@ -218,7 +222,7 @@ export default function AIAssistant() {
         };
       }
     },
-    [handleToolCall, closeModal],
+    [handleToolCall, closeModal]
   );
 
   // 用户提交问题
@@ -236,7 +240,7 @@ export default function AIAssistant() {
 
       await callAI(trimmedQuery);
     },
-    [query, callAI],
+    [query, callAI]
   );
 
   return (
@@ -369,8 +373,8 @@ export default function AIAssistant() {
                   tool.status === "pending"
                     ? "bg-gray-100"
                     : tool.status === "executing"
-                      ? "bg-blue-100"
-                      : "bg-green-100"
+                    ? "bg-blue-100"
+                    : "bg-green-100"
                 }`}
               >
                 <span className="text-xl">
@@ -387,4 +391,3 @@ export default function AIAssistant() {
     </>
   );
 }
-
