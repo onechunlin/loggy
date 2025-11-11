@@ -9,6 +9,10 @@ import {
   generateFormCommands,
 } from "@/app/utils/commandCenter/commands";
 import { aiAgentService, AgentResponse } from "@/app/lib/client";
+import {
+  AIAssistantEventCenter,
+  AIAssistantEventName,
+} from "@/app/events/aiAssistantEvent";
 
 type ToolExecutionStatus = {
   toolName: string;
@@ -47,10 +51,25 @@ export default function AIAssistant() {
       CommandCenter.getCommandNames()
     );
 
+    // 监听打开 AIAssistant 事件
+    const handleOpenAssistant = (config: { query?: string }) => {
+      setIsModalVisible(true);
+      setQuery(config.query || "");
+      setIsAnalyzing(false);
+      setToolExecutions([]);
+      setAiReplyContent("");
+    };
+
+    AIAssistantEventCenter.on(
+      AIAssistantEventName.OpenAssistant,
+      handleOpenAssistant
+    );
+
     // 组件卸载时清理
     return () => {
       console.log("🧹 组件卸载，清空指令中心");
       CommandCenter.clear();
+      AIAssistantEventCenter.off(AIAssistantEventName.OpenAssistant);
     };
   }, []);
 
@@ -108,12 +127,13 @@ export default function AIAssistant() {
 
       setToolExecutions(initialToolExecutions);
 
-      // 延迟一下让用户看到工具列表，然后关闭弹窗
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // 关闭弹窗，但保留工具执行状态
+      // 立即关闭弹窗，显示工具执行列表
       setIsModalVisible(false);
       setQuery("");
+      setAiReplyContent("");
+
+      // 延迟一下让用户看到工具列表
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       // 依次执行每个工具（通过指令中心）
       const commandResults: CommandResult[] = [];
@@ -151,7 +171,7 @@ export default function AIAssistant() {
         }
       }
 
-      // 所有工具执行完成后，延迟1秒清空工具列表
+      // 所有工具执行完成后，延迟1秒后关闭执行列表
       setTimeout(() => {
         setToolExecutions([]);
       }, 1000);
@@ -171,17 +191,23 @@ export default function AIAssistant() {
         console.log("🤖 开始调用AI分析指令:", userQuery);
 
         const toolCalls = await aiAgentService.preRequest(userQuery);
-        if (toolCalls.toolCalls.length === 0) {
-          console.log("💬 AI回复:", toolCalls.answer);
 
-          // 显示 AI 回复内容在弹窗上
+        // 如果是闲聊内容（没有工具调用），直接显示回复，保持弹窗打开
+        if (toolCalls.toolCalls.length === 0) {
+          console.log("💬 AI回复（闲聊）:", toolCalls.answer);
+
+          // 显示 AI 回复内容在弹窗上，保持弹窗打开
           setAiReplyContent(toolCalls.answer || "抱歉，我没有理解您的问题");
           setIsAnalyzing(false);
+          // 保持弹窗打开，不关闭
 
           return {
             content: toolCalls.answer,
           };
         }
+
+        // 如果有工具调用，关闭弹窗并显示工具执行列表
+        console.log("🔧 检测到工具调用，关闭弹窗并显示执行列表");
 
         // 🎯 从指令中心获取所有已注册的工具
         const neededTools = toolCalls.toolCalls.map(
@@ -213,16 +239,15 @@ export default function AIAssistant() {
         return toolResult || response;
       } catch (error) {
         console.error("❌ AI调用失败:", error);
-        // 出错也关闭弹窗
-        setTimeout(() => {
-          closeModal();
-        }, 500);
+        // 出错时显示错误信息在弹窗中
+        setAiReplyContent("抱歉，处理您的请求时出现了错误，请稍后再试");
+        setIsAnalyzing(false);
         return {
           error: error instanceof Error ? error.message : "未知错误",
         };
       }
     },
-    [handleToolCall, closeModal]
+    [handleToolCall]
   );
 
   // 用户提交问题
@@ -248,11 +273,11 @@ export default function AIAssistant() {
       {/* AI 助手图标 */}
       <button
         onClick={handleIconClick}
-        className="fixed bottom-20 right-4 z-50 w-14 h-14 bg-blue-500 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 transition-colors"
+        className="fixed bottom-20 right-4 z-50 w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-xl flex items-center justify-center hover:shadow-2xl hover:scale-110 transition-all duration-300 group"
         aria-label="打开 AI 助手"
       >
         <svg
-          className="w-8 h-8 text-white"
+          className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -268,17 +293,22 @@ export default function AIAssistant() {
 
       {/* 弹窗 */}
       {isModalVisible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">AI 助手</h2>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-[zoomIn_0.3s_ease-out]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-end items-center mb-4">
               <button
                 onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
                 aria-label="关闭"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -293,60 +323,64 @@ export default function AIAssistant() {
               </button>
             </div>
 
-            {/* 如果有 AI 回复内容，显示回复 */}
+            {/* 如果有 AI 回复内容（闲聊），显示回复 */}
             {aiReplyContent ? (
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-2">AI 回复</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-gray-800 whitespace-pre-wrap">
+              <div>
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-5 mb-4 max-h-64 overflow-y-auto border border-blue-100">
+                  <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
                     {aiReplyContent}
                   </p>
                 </div>
-                <button
-                  onClick={closeModal}
-                  className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  关闭
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setQuery("");
+                      setAiReplyContent("");
+                    }}
+                    className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    继续
+                  </button>
+                  <button
+                    onClick={closeModal}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2.5 rounded-xl hover:shadow-lg transition-all font-medium"
+                  >
+                    完成
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                  <label
-                    htmlFor="query"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    请输入您的问题
-                  </label>
                   <textarea
-                    id="query"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="例如：跳转到笔记页面"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    placeholder="输入你的指令..."
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none transition-all bg-gray-50/50"
                     rows={4}
                     disabled={isAnalyzing}
                   />
                 </div>
 
                 {isAnalyzing && (
-                  <div className="mb-4 text-center text-gray-600">
-                    正在分析中...
+                  <div className="mb-4 flex items-center justify-center gap-2 text-gray-500">
+                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm">处理中</span>
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     type="submit"
                     disabled={!query.trim() || isAnalyzing}
-                    className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2.5 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                   >
-                    提交
+                    {isAnalyzing ? "处理中..." : "发送"}
                   </button>
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="px-6 bg-gray-100 text-gray-700 py-2.5 rounded-xl hover:bg-gray-200 transition-colors font-medium"
                   >
                     取消
                   </button>
@@ -357,32 +391,78 @@ export default function AIAssistant() {
         </div>
       )}
 
-      {/* 工具执行状态列表 - 独立在弹窗外部 */}
+      {/* 工具执行状态列表 - 居中显示，仅在工具调用时显示 */}
       {toolExecutions.length > 0 && (
-        <div className="fixed bottom-4 right-4 z-40 bg-white rounded-lg shadow-xl p-4 max-w-sm">
-          <h3 className="text-lg font-semibold mb-2">
-            {toolExecutions.every((t) => t.status === "completed")
-              ? "✅ 指令执行完成"
-              : "⚙️ 正在执行指令"}
-          </h3>
-          <div className="space-y-2">
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] max-w-[400px] p-5 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl z-[10000] animate-[zoomIn_0.3s_ease-out] border border-gray-100">
+          <div className="flex items-center justify-end mb-4">
+            {toolExecutions.every((t) => t.status === "completed") && (
+              <button
+                onClick={() => setToolExecutions([])}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+                aria-label="关闭"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col gap-2.5">
             {toolExecutions.map((tool, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-2 p-2 rounded ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
                   tool.status === "pending"
-                    ? "bg-gray-100"
+                    ? "bg-gray-50 border border-gray-200"
                     : tool.status === "executing"
-                    ? "bg-blue-100"
-                    : "bg-green-100"
+                    ? "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200"
+                    : "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200"
                 }`}
               >
-                <span className="text-xl">
-                  {tool.status === "pending" && "⏳"}
-                  {tool.status === "executing" && "▶️"}
-                  {tool.status === "completed" && "✓"}
+                <div
+                  className={`w-7 h-7 flex items-center justify-center rounded-full flex-shrink-0 ${
+                    tool.status === "pending"
+                      ? "bg-gray-200"
+                      : tool.status === "executing"
+                      ? "bg-blue-500"
+                      : "bg-green-500"
+                  }`}
+                >
+                  {tool.status === "pending" && (
+                    <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                  {tool.status === "executing" && (
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                  {tool.status === "completed" && (
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <span className="text-sm text-gray-700 font-medium flex-1">
+                  {tool.displayName}
                 </span>
-                <span className="text-sm">{tool.displayName}</span>
               </div>
             ))}
           </div>
