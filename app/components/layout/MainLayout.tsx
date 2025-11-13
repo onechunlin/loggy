@@ -38,6 +38,10 @@ export default function MainLayout({
       handleNavigate
     );
 
+    window.addEventListener("error", (event) => {
+      console.error("❌ 全局错误", event);
+    });
+
     return () => {
       NavigatePageEventCenter.off(NavigatePageEventName.NavigateToPage);
     };
