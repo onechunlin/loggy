@@ -25,6 +25,13 @@ const demos: DemoItem[] = [
     icon: "📝",
     path: "/demos/ai-text",
   },
+  {
+    id: "api-error",
+    title: "API 协议不对齐",
+    description: "演示前端和后端接口协议不对齐导致的 JavaScript 错误",
+    icon: "⚠️",
+    path: "/demos/api-error",
+  },
 ];
 
 /**
