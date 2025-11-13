@@ -91,15 +91,7 @@ export default function ApiErrorDemoPage() {
               </code>{" "}
               访问
             </li>
-            <li>
-              当后端没有返回{" "}
-              <code className="bg-yellow-100 px-1 rounded">userInfo</code>{" "}
-              时，会报错：
-              <code className="bg-yellow-100 px-1 rounded">
-                Cannot read property 'profile' of undefined
-              </code>
-              （页面白屏）
-            </li>
+            <li>当后端没有返回 userInfo 时，会页面白屏</li>
           </ul>
         </div>
 
