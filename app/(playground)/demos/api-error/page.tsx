@@ -73,7 +73,7 @@ export default function ApiErrorDemoPage() {
           <h2 className="text-lg font-semibold text-yellow-900 mb-2">
             📋 问题说明
           </h2>
-          <ul className="text-sm text-yellow-800 space-y-1 list-disc list-inside">
+          <ul className="text-sm text-yellow-800 space-y-2 list-disc list-inside">
             <li>
               前端认为{" "}
               <code className="bg-yellow-100 px-1 rounded">userInfo</code>{" "}
@@ -82,16 +82,19 @@ export default function ApiErrorDemoPage() {
             <li>
               后端实际返回中{" "}
               <code className="bg-yellow-100 px-1 rounded">userInfo</code>{" "}
-              是可选的（90% 概率不返回）
+              是可选的 （90% 概率不返回）
             </li>
             <li>
               前端直接使用{" "}
               <code className="bg-yellow-100 px-1 rounded">
                 data.userInfo.profile.name
               </code>{" "}
-              访问
+              访问，当后端没有返回{" "}
+              <code className="bg-yellow-100 px-1 rounded">userInfo</code>{" "}
+              时，会页面白屏
             </li>
-            <li>当后端没有返回 userInfo 时，会页面白屏</li>
+            <li>前端监测到页面白屏后，会后台调用 AI 修复页面异常</li>
+            <li>AI 修复完成后，会重新加载页面</li>
           </ul>
         </div>
 
@@ -106,13 +109,11 @@ export default function ApiErrorDemoPage() {
           </button>
         </div>
 
-        {response && (
-          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
-            <h6 className="text-lg font-semibold text-gray-900 mb-2">
-              用户名称：{response.userInfo.profile.name}
-            </h6>
-          </div>
-        )}
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
+          <h6 className="text-lg font-semibold text-gray-900 mb-2">
+            用户名称：{response?.userInfo.profile.name}
+          </h6>
+        </div>
       </div>
     </div>
   );

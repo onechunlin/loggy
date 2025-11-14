@@ -38,9 +38,44 @@ export default function MainLayout({
       handleNavigate
     );
 
-    window.addEventListener("error", (event) => {
-      console.error("❌ 全局错误", event);
-    });
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("error", (event) => {
+        const errorFileName = event.filename;
+        const errorLineNumber = event.lineno;
+        const errorColumnNumber = event.colno;
+        const errorMessage = event.message;
+
+        navigator.serviceWorker.getRegistration().then((registration) => {
+          // 向激活的 Service Worker 发送消息
+          if (registration?.active) {
+            // 发送消息
+            registration.active.postMessage({
+              type: "REPLACE_JS_CONTENT",
+              data: {
+                fileName: errorFileName,
+                lineNumber: errorLineNumber,
+                columnNumber: errorColumnNumber,
+                message: errorMessage,
+              },
+            });
+          }
+        });
+      });
+
+      // 监听 Service Worker 的回复
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        const { type, data } = event.data as {
+          type: string;
+          data: { fileName: string };
+        };
+        if (type === "REPLACE_JS_CONTENT_START") {
+          console.warn("⚠️监测到页面异常，AI正在尝试修复");
+        } else if (type === "REPLACE_JS_CONTENT_SUCCESS") {
+          confirm("AI已尝试修复完成，点击重新加载");
+          window.location.reload();
+        }
+      });
+    }
 
     return () => {
       NavigatePageEventCenter.off(NavigatePageEventName.NavigateToPage);
