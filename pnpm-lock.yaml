@@ -41,6 +41,9 @@ importers:
       typed.js:
         specifier: ^2.1.0
         version: 2.1.0
+      vconsole:
+        specifier: ^3.15.1
+        version: 3.15.1
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -953,6 +956,13 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
 
+  copy-text-to-clipboard@3.2.2:
+    resolution: {integrity: sha512-T6SqyLd1iLuqPA90J5N4cTalrtovCySh58iiZDGJ6FGznbclKh4UI+FGacQSgFzwKG77W7XT5gwbVEbd9cIH1A==}
+    engines: {node: '>=12'}
+
+  core-js@3.46.0:
+    resolution: {integrity: sha512-vDMm9B0xnqqZ8uSBpZ8sNtRtOdmfShrvT6h2TuQGLs0Is+cR0DYbj/KWP6ALVNbWPpqA/qPLoOuppJN07humpA==}
+
   cross-spawn@7.0.6:
     resolution: {integrity: sha1-ilj+ePANzXDDcEUXWd+/rwPo7p8=}
     engines: {node: '>= 8'}
@@ -1670,6 +1680,9 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha1-V0yBOM4dK1hh8LRFedut1gxmFbI=}
 
+  mutation-observer@1.0.3:
+    resolution: {integrity: sha512-M/O/4rF2h776hV7qGMZUH3utZLO/jK7p8rnNgGkjKUw8zCGjRQPxB8z6+5l8+VjRUQ3dNYu4vjqXYLr+U8ZVNA==}
+
   nano-memoize@3.0.16:
     resolution: {integrity: sha512-JyK96AKVGAwVeMj3MoMhaSXaUNqgMbCRSQB3trUV8tYZfWEzqUBKdK1qJpfuNXgKeHOx1jv/IEYTM659ly7zUA==}
 
@@ -2161,6 +2174,9 @@ packages:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  vconsole@3.15.1:
+    resolution: {integrity: sha512-KH8XLdrq9T5YHJO/ixrjivHfmF2PC2CdVoK6RWZB4yftMykYIaXY1mxZYAic70vADM54kpMQF+dYmvl5NRNy1g==}
 
   webidl-conversions@4.0.2:
     resolution: {integrity: sha512-YQ+BmxuTgd6UXZW3+ICGfyqRyHXVlD5GtQr5+qjiNW7bF0cqrzX500HVXPBOvgXb5YnzDd+h0zqyv61KUD7+Sg==}
@@ -3035,6 +3051,10 @@ snapshots:
 
   concat-map@0.0.1: {}
 
+  copy-text-to-clipboard@3.2.2: {}
+
+  core-js@3.46.0: {}
+
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -3876,6 +3896,8 @@ snapshots:
 
   ms@2.1.3: {}
 
+  mutation-observer@1.0.3: {}
+
   nano-memoize@3.0.16: {}
 
   nanoid@3.3.11: {}
@@ -4462,6 +4484,13 @@ snapshots:
   use-sync-external-store@1.6.0(react@19.1.0):
     dependencies:
       react: 19.1.0
+
+  vconsole@3.15.1:
+    dependencies:
+      '@babel/runtime': 7.28.4
+      copy-text-to-clipboard: 3.2.2
+      core-js: 3.46.0
+      mutation-observer: 1.0.3
 
   webidl-conversions@4.0.2: {}
 

@@ -7,6 +7,7 @@ import {
   APP_TITLE_TEMPLATE,
   APP_DESCRIPTION,
 } from "@/app/lib/constants";
+import { VConsole } from "@/app/components/debug";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -53,7 +54,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        {children}
+        <VConsole />
+      </body>
     </html>
   );
 }
