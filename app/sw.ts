@@ -136,7 +136,7 @@ self.addEventListener("message", async (event) => {
     });
     // todo 调用AI修复，这里先模拟
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    const replacement = `(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[264],{5519:(e,s,l)=>{"use strict";var r=l(2455);l.o(r,"useParams")&&l.d(s,{useParams:function(){return r.useParams}}),l.o(r,"usePathname")&&l.d(s,{usePathname:function(){return r.usePathname}}),l.o(r,"useRouter")&&l.d(s,{useRouter:function(){return r.useRouter}})},6419:(e,s,l)=>{"use strict";l.r(s),l.d(s,{default:()=>n});var r=l(4248),a=l(4564),t=l(5519);function n(){let e=(0,t.useRouter)(),[s,l]=(0,a.useState)(!1),[n,o]=(0,a.useState)(null),d=async()=>{l(!0);try{let e=await fetch("/api/demo/user-info"),s=await e.json();o(s)}catch(e){console.error(e)}finally{l(!1)}};return(0,r.jsx)("div",{className:"h-full bg-gradient-to-br from-gray-50 to-blue-50/30 p-4 sm:p-8",children:(0,r.jsxs)("div",{className:"max-w-2xl mx-auto",children:[(0,r.jsxs)("button",{onClick:()=>e.push("/playground"),className:"mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors",children:[(0,r.jsx)("span",{className:"text-lg",children:"←"}),(0,r.jsx)("span",{className:"text-sm",children:"返回 Playground"})]}),(0,r.jsxs)("div",{className:"mb-8",children:[(0,r.jsx)("h1",{className:"text-3xl font-bold text-gray-900",children:"⚠️ API 协议不对齐演示"}),(0,r.jsx)("p",{className:"text-gray-600 mt-2",children:"演示前端和后端接口协议不对齐导致的 JavaScript 错误"})]}),(0,r.jsxs)("div",{className:"bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-6",children:[(0,r.jsx)("h2",{className:"text-lg font-semibold text-yellow-900 mb-2",children:"\uD83D\uDCCB 问题说明"}),(0,r.jsxs)("ul",{className:"text-sm text-yellow-800 space-y-1 list-disc list-inside",children:[(0,r.jsxs)("li",{children:["前端认为"," ",(0,r.jsx)("code",{className:"bg-yellow-100 px-1 rounded",children:"userInfo"})," ","字段是必传的"]}),(0,r.jsxs)("li",{children:["后端实际返回中"," ",(0,r.jsx)("code",{className:"bg-yellow-100 px-1 rounded",children:"userInfo"})," ","是可选的（90% 概率不返回）"]}),(0,r.jsxs)("li",{children:["前端直接使用"," ",(0,r.jsx)("code",{className:"bg-yellow-100 px-1 rounded",children:"data.userInfo.profile.name"})," ","访问"]}),(0,r.jsx)("li",{children:"当后端没有返回 userInfo 时，会页面白屏"})]})]}),(0,r.jsx)("div",{className:"bg-white rounded-2xl p-6 border border-gray-200 shadow-lg mb-6",children:(0,r.jsx)("button",{onClick:d,disabled:s,className:"w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium",children:s?"请求中...":"发起请求（可能触发错误）"})}),n&&(0,r.jsx)("div",{className:"bg-white rounded-2xl p-6 border border-gray-200 shadow-lg",children:(0,r.jsxs)("h6",{className:"text-lg font-semibold text-gray-900 mb-2",children:["用户名称：",n.userInfo?.profile?.name || "未知用户"]})})]})})}},6776:(e,s,l)=>{Promise.resolve().then(l.bind(l,6419))}},e=>{e.O(0,[647,895,358],()=>e(e.s=6776)),_N_E=e.O()}]);`;
+    const replacement = `(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[264],{1442:(e,s,r)=>{Promise.resolve().then(r.bind(r,6419))},5519:(e,s,r)=>{"use strict";var l=r(2455);r.o(l,"useParams")&&r.d(s,{useParams:function(){return l.useParams}}),r.o(l,"usePathname")&&r.d(s,{usePathname:function(){return l.usePathname}}),r.o(l,"useRouter")&&r.d(s,{useRouter:function(){return l.useRouter}})},6419:(e,s,r)=>{"use strict";r.r(s),r.d(s,{default:()=>o});var l=r(4248),a=r(4564),t=r(5519);function o(){let e=(0,t.useRouter)(),[s,r]=(0,a.useState)(!1),[o,i]=(0,a.useState)(null),[n,d]=(0,a.useState)(!1),c=async()=>{r(!0);try{let e=await fetch("/api/demo/user-info"),s=await e.json();i(s)}catch(e){console.error(e)}finally{r(!1)}},u=async()=>{if(confirm("确定要清空 JS 缓存吗？清空后页面会重新报错。")){d(!0);try{if("serviceWorker"in navigator){let e=await navigator.serviceWorker.getRegistration();if(null==e?void 0:e.active){e.active.postMessage({type:"CLEAR_ALL_JS_CONTENT",data:{}});let s=null,r=e=>{let{type:l}=e.data;("CLEAR_ALL_JS_CONTENT_SUCCESS"===l||"CLEAR_ALL_JS_CONTENT_ERROR"===l)&&(s&&clearTimeout(s),navigator.serviceWorker.removeEventListener("message",r),"CLEAR_ALL_JS_CONTENT_SUCCESS"===l?(alert("JS 缓存已清空，页面将重新加载"),window.location.reload()):(alert("清空缓存失败，请重试"),d(!1)))};navigator.serviceWorker.addEventListener("message",r),s=setTimeout(()=>{navigator.serviceWorker.removeEventListener("message",r),alert("清空缓存超时，请重试"),d(!1)},5e3)}else alert("Service Worker 未激活"),d(!1)}else alert("浏览器不支持 Service Worker"),d(!1)}catch(e){console.error("清空缓存失败:",e),alert("清空缓存失败，请重试"),d(!1)}}};return(0,l.jsx)("div",{className:"h-full bg-gradient-to-br from-gray-50 to-blue-50/30 p-4 sm:p-8",children:(0,l.jsxs)("div",{className:"max-w-2xl mx-auto",children:[(0,l.jsxs)("button",{onClick:()=>e.push("/playground"),className:"mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors",children:[(0,l.jsx)("span",{className:"text-lg",children:"←"}),(0,l.jsx)("span",{className:"text-sm",children:"返回 Playground"})]}),(0,l.jsxs)("div",{className:"mb-8",children:[(0,l.jsx)("h1",{className:"text-3xl font-bold text-gray-900",children:"⚠️ API 协议不对齐演示"}),(0,l.jsx)("p",{className:"text-gray-600 mt-2",children:"演示前端和后端接口协议不对齐导致的 JavaScript 错误"})]}),(0,l.jsxs)("div",{className:"bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-6",children:[(0,l.jsx)("h2",{className:"text-lg font-semibold text-yellow-900 mb-2",children:"\uD83D\uDCCB 问题说明"}),(0,l.jsxs)("ul",{className:"text-sm text-yellow-800 space-y-2 list-disc list-inside",children:[(0,l.jsxs)("li",{children:["前端认为"," ",(0,l.jsx)("code",{className:"bg-yellow-100 px-1 rounded",children:"userInfo"})," ","字段是必传的"]}),(0,l.jsxs)("li",{children:["后端实际返回中"," ",(0,l.jsx)("code",{className:"bg-yellow-100 px-1 rounded",children:"userInfo"})," ","是可选的 （90% 概率不返回）"]}),(0,l.jsxs)("li",{children:["前端直接使用"," ",(0,l.jsx)("code",{className:"bg-yellow-100 px-1 rounded",children:"data.userInfo.profile.name"})," ","访问，当后端没有返回"," ",(0,l.jsx)("code",{className:"bg-yellow-100 px-1 rounded",children:"userInfo"})," ","时，会页面白屏"]}),(0,l.jsx)("li",{children:"前端监测到页面白屏后，会后台调用 AI 修复页面异常"}),(0,l.jsx)("li",{children:"AI 修复完成后，会重新加载页面"})]})]}),(0,l.jsxs)("div",{className:"bg-white rounded-2xl p-6 border border-gray-200 shadow-lg mb-6 space-y-3",children:[(0,l.jsx)("button",{onClick:c,disabled:s,className:"w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium",children:s?"请求中...":"发起请求（可能触发错误）"}),(0,l.jsx)("button",{onClick:u,disabled:n,className:"w-full px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium",children:n?"清空中...":"清空JS缓存（会重新报错）"})]}),o&&(0,l.jsx)("div",{className:"bg-white rounded-2xl p-6 border border-gray-200 shadow-lg",children:(0,l.jsxs)("h6",{className:"text-lg font-semibold text-gray-900 mb-2",children:["用户名称：",o.userInfo?.profile?.name || "未知用户"]})})]})})}}},e=>{e.O(0,[647,895,358],()=>e(e.s=1442)),_N_E=e.O()}]);`;
     replaceJsContent.set(data.fileName, replacement);
     await saveReplacement(data.fileName, replacement);
 
@@ -149,6 +149,41 @@ self.addEventListener("message", async (event) => {
   } else if (type === "REMOVE_JS_CONTENT") {
     replaceJsContent.delete(data.fileName);
     await deleteReplacement(data.fileName);
+  } else if (type === "CLEAR_ALL_JS_CONTENT") {
+    // 清除所有替换内容
+    const allKeys = Array.from(replaceJsContent.keys());
+    replaceJsContent.clear();
+
+    // 从 IndexedDB 删除所有数据
+    try {
+      const db = await initDB();
+      const transaction = db.transaction([STORE_NAME], "readwrite");
+      const store = transaction.objectStore(STORE_NAME);
+
+      await Promise.all(
+        allKeys.map(
+          (key) =>
+            new Promise<void>((resolve, reject) => {
+              const request = store.delete(key);
+              request.onsuccess = () => resolve();
+              request.onerror = () => reject(request.error);
+            })
+        )
+      );
+
+      console.log("🚀 已清除所有 JS 替换内容");
+
+      event.source?.postMessage({
+        type: "CLEAR_ALL_JS_CONTENT_SUCCESS",
+        data: {},
+      });
+    } catch (error) {
+      console.error("🚀 清除所有 JS 替换内容失败:", error);
+      event.source?.postMessage({
+        type: "CLEAR_ALL_JS_CONTENT_ERROR",
+        data: { error: String(error) },
+      });
+    }
   }
 });
 

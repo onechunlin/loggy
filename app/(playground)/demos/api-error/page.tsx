@@ -33,6 +33,8 @@ export default function ApiErrorDemoPage() {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ApiResponse | null>(null);
 
+  const [clearing, setClearing] = useState(false);
+
   const handleRequest = async () => {
     setLoading(true);
     try {
@@ -43,6 +45,74 @@ export default function ApiErrorDemoPage() {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleClearCache = async () => {
+    if (!confirm("确定要清空 JS 缓存吗？清空后页面会重新报错。")) {
+      return;
+    }
+
+    setClearing(true);
+    try {
+      if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration?.active) {
+          // 发送清除缓存消息
+          registration.active.postMessage({
+            type: "CLEAR_ALL_JS_CONTENT",
+            data: {},
+          });
+
+          // 监听清除成功的消息
+          let timeoutId: NodeJS.Timeout | null = null;
+          const messageHandler = (event: MessageEvent) => {
+            const { type } = event.data as { type: string };
+            if (
+              type === "CLEAR_ALL_JS_CONTENT_SUCCESS" ||
+              type === "CLEAR_ALL_JS_CONTENT_ERROR"
+            ) {
+              if (timeoutId) {
+                clearTimeout(timeoutId);
+              }
+              navigator.serviceWorker.removeEventListener(
+                "message",
+                messageHandler
+              );
+
+              if (type === "CLEAR_ALL_JS_CONTENT_SUCCESS") {
+                alert("JS 缓存已清空，页面将重新加载");
+                window.location.reload();
+              } else {
+                alert("清空缓存失败，请重试");
+                setClearing(false);
+              }
+            }
+          };
+
+          navigator.serviceWorker.addEventListener("message", messageHandler);
+
+          // 设置超时
+          timeoutId = setTimeout(() => {
+            navigator.serviceWorker.removeEventListener(
+              "message",
+              messageHandler
+            );
+            alert("清空缓存超时，请重试");
+            setClearing(false);
+          }, 5000);
+        } else {
+          alert("Service Worker 未激活");
+          setClearing(false);
+        }
+      } else {
+        alert("浏览器不支持 Service Worker");
+        setClearing(false);
+      }
+    } catch (error) {
+      console.error("清空缓存失败:", error);
+      alert("清空缓存失败，请重试");
+      setClearing(false);
     }
   };
 
@@ -99,13 +169,20 @@ export default function ApiErrorDemoPage() {
         </div>
 
         {/* 操作按钮 */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg mb-6">
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg mb-6 space-y-3">
           <button
             onClick={handleRequest}
             disabled={loading}
             className="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
           >
             {loading ? "请求中..." : "发起请求（可能触发错误）"}
+          </button>
+          <button
+            onClick={handleClearCache}
+            disabled={clearing}
+            className="w-full px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+          >
+            {clearing ? "清空中..." : "清空JS缓存（会重新报错）"}
           </button>
         </div>
 

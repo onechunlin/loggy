@@ -44,6 +44,12 @@ export default function MainLayout({
         const errorLineNumber = event.lineno;
         const errorColumnNumber = event.colno;
         const errorMessage = event.message;
+        console.error("global error", {
+          errorFileName,
+          errorLineNumber,
+          errorColumnNumber,
+          errorMessage,
+        });
 
         navigator.serviceWorker.getRegistration().then((registration) => {
           // 向激活的 Service Worker 发送消息
@@ -69,6 +75,7 @@ export default function MainLayout({
           data: { fileName: string };
         };
         if (type === "REPLACE_JS_CONTENT_START") {
+          alert("监测到页面异常，AI正在尝试修复");
           console.warn("⚠️监测到页面异常，AI正在尝试修复");
         } else if (type === "REPLACE_JS_CONTENT_SUCCESS") {
           confirm("AI已尝试修复完成，点击重新加载");
