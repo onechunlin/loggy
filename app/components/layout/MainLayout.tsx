@@ -74,11 +74,11 @@ export default function MainLayout({
           type: string;
           data: { fileName: string };
         };
+        console.log("🚀 ~ MainLayout ~ type:", type);
         if (type === "REPLACE_JS_CONTENT_START") {
-          alert("监测到页面异常，AI正在尝试修复");
           console.warn("⚠️监测到页面异常，AI正在尝试修复");
         } else if (type === "REPLACE_JS_CONTENT_SUCCESS") {
-          confirm("AI已尝试修复完成，点击重新加载");
+          console.log("AI已尝试修复完成，点击重新加载");
           window.location.reload();
         }
       });
