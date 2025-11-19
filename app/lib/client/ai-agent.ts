@@ -128,15 +128,28 @@ export class AIAgentService {
         isComplete: choice.finish_reason === "stop",
       };
 
-      // 解析工具调用
+      // 解析工具调用，清理工具名称末尾的多余引号
       if (message.tool_calls && message.tool_calls.length > 0) {
-        agentResponse.toolCalls = message.tool_calls.map((tc: any) => ({
-          type: "function",
-          function: {
-            name: tc.function.name,
-            arguments: tc.function.arguments,
-          },
-        }));
+        agentResponse.toolCalls = message.tool_calls.map((tc: any) => {
+          // 去除末尾的多余引号（单引号或双引号）
+          const rawName = tc.function.name || "";
+          const cleanName = rawName.replace(/["']+$/, "");
+
+          // 如果工具名称被清理过，记录日志
+          if (rawName !== cleanName) {
+            console.warn(
+              `⚠️ 工具名称包含多余引号，已自动清理: "${rawName}" -> "${cleanName}"`
+            );
+          }
+
+          return {
+            type: "function",
+            function: {
+              name: cleanName,
+              arguments: tc.function.arguments,
+            },
+          };
+        });
 
         console.log("🔧 DeepSeek 返回工具调用:", {
           count: agentResponse.toolCalls?.length || 0,
@@ -257,20 +270,10 @@ ${toolsList}
 
           // 构造工具调用信息，清理工具名称末尾的多余引号
           const toolCalls: ToolCall[] = toolNames.map((name: string) => {
-            // 去除末尾的多余引号（单引号或双引号）
-            const cleanName = (name || "").replace(/["']+$/, "");
-
-            // 如果工具名称被清理过，记录日志
-            if (name !== cleanName) {
-              console.warn(
-                `⚠️ 工具名称包含多余引号，已自动清理: "${name}" -> "${cleanName}"`
-              );
-            }
-
             return {
               type: "function" as const,
               function: {
-                name: cleanName,
+                name,
                 arguments: "{}", // 稍后由实际的工具调用填充参数
               },
             };
