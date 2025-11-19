@@ -134,8 +134,7 @@ export class AIAgentService {
           type: "function",
           function: {
             name: tc.function.name,
-            // ! 确保 arguments 是 JSON 字符串，直接传入会有多一个双引号的情况
-            arguments: JSON.stringify(JSON.parse(tc.function.arguments)),
+            arguments: tc.function.arguments,
           },
         }));
 
@@ -256,14 +255,26 @@ ${toolsList}
             answer,
           });
 
-          // 构造工具调用信息
-          const toolCalls: ToolCall[] = toolNames.map((name: string) => ({
-            type: "function" as const,
-            function: {
-              name,
-              arguments: "{}", // 稍后由实际的工具调用填充参数
-            },
-          }));
+          // 构造工具调用信息，清理工具名称末尾的多余引号
+          const toolCalls: ToolCall[] = toolNames.map((name: string) => {
+            // 去除末尾的多余引号（单引号或双引号）
+            const cleanName = (name || "").replace(/["']+$/, "");
+
+            // 如果工具名称被清理过，记录日志
+            if (name !== cleanName) {
+              console.warn(
+                `⚠️ 工具名称包含多余引号，已自动清理: "${name}" -> "${cleanName}"`
+              );
+            }
+
+            return {
+              type: "function" as const,
+              function: {
+                name: cleanName,
+                arguments: "{}", // 稍后由实际的工具调用填充参数
+              },
+            };
+          });
 
           return {
             toolCalls,
