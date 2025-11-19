@@ -134,7 +134,8 @@ export class AIAgentService {
           type: "function",
           function: {
             name: tc.function.name,
-            arguments: tc.function.arguments,
+            // ! 确保 arguments 是 JSON 字符串，直接传入会有多一个双引号的情况
+            arguments: JSON.stringify(JSON.parse(tc.function.arguments)),
           },
         }));
 
