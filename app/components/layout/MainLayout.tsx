@@ -76,10 +76,14 @@ export default function MainLayout({
         };
         console.log("🚀 ~ MainLayout ~ type:", type);
         if (type === "REPLACE_JS_CONTENT_START") {
+          alert("监测到页面异常，AI正在尝试修复");
           console.warn("⚠️监测到页面异常，AI正在尝试修复");
         } else if (type === "REPLACE_JS_CONTENT_SUCCESS") {
           console.log("AI已尝试修复完成，点击重新加载");
-          window.location.reload();
+          // 强制刷新，禁用缓存
+          const url = new URL(window.location.href);
+          url.searchParams.set("_sw_reload", Date.now().toString());
+          window.location.replace(url.toString());
         }
       });
     }
