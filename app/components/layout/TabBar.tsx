@@ -41,10 +41,10 @@ const navItems: NavItem[] = [
     path: "/todos",
   },
   {
-    id: "playground",
-    icon: "🎨",
-    label: "实验",
-    path: "/playground",
+    id: "profile",
+    icon: "👤",
+    label: "我的",
+    path: "/profile",
   },
 ];
 
