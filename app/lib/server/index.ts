@@ -4,6 +4,8 @@
  */
 
 export * from "./openai-service";
+// embedding-service 使用动态导入，不在这里统一导出
+export * from "./embedding-helper";
 
 // MongoDB 和认证
 export { connectDB, disconnectDB, getConnectionStatus } from "./mongodb";

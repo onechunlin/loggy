@@ -9,7 +9,6 @@ export interface Note {
   id: string;
   title: string;
   content: string; // Markdown 格式
-  tags: string[];
   isStarred: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -21,7 +20,6 @@ export interface Note {
 export interface CreateNoteParams {
   title: string;
   content?: string;
-  tags?: string[];
 }
 
 /**
@@ -30,7 +28,6 @@ export interface CreateNoteParams {
 export interface UpdateNoteParams {
   title?: string;
   content?: string;
-  tags?: string[];
   isStarred?: boolean;
 }
 
@@ -38,7 +35,6 @@ export interface UpdateNoteParams {
  * 笔记筛选参数
  */
 export interface NoteFilters {
-  tags?: string[];
   isStarred?: boolean;
   searchQuery?: string;
 }
@@ -51,6 +47,4 @@ export interface NoteStats {
   starred: number;
   thisWeek: number;
   thisMonth: number;
-  totalTags: number;
 }
-

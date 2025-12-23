@@ -16,16 +16,13 @@ interface NoteCardProps {
  */
 function NoteCard({ note }: NoteCardProps) {
   const router = useRouter();
-  
+
   const summary = useMemo(
     () => generateSummary(note.content, 120),
     [note.content]
   );
-  
-  const wordCount = useMemo(
-    () => countWords(note.content),
-    [note.content]
-  );
+
+  const wordCount = useMemo(() => countWords(note.content), [note.content]);
 
   const handleClick = () => {
     router.push(`/notes/${note.id}`);
@@ -42,34 +39,13 @@ function NoteCard({ note }: NoteCardProps) {
           {note.title}
         </h3>
         {note.isStarred && (
-          <span className="text-xl ml-2 flex-shrink-0">
-            ⭐
-          </span>
+          <span className="text-xl ml-2 flex-shrink-0">⭐</span>
         )}
       </div>
 
       {/* 摘要 */}
       {summary && (
         <p className="text-sm text-gray-600 mb-4 line-clamp-3">{summary}</p>
-      )}
-
-      {/* 标签 */}
-      {note.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {note.tags.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full"
-            >
-              #{tag}
-            </span>
-          ))}
-          {note.tags.length > 3 && (
-            <span className="px-2 py-1 bg-gray-50 text-gray-500 text-xs rounded-full">
-              +{note.tags.length - 3}
-            </span>
-          )}
-        </div>
       )}
 
       {/* 底部信息 */}
@@ -87,4 +63,3 @@ function NoteCard({ note }: NoteCardProps) {
 }
 
 export default memo(NoteCard);
-

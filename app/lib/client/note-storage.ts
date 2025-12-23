@@ -146,7 +146,6 @@ export async function createNote(params: CreateNoteParams): Promise<Note> {
     id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     title: params.title,
     content: params.content || "",
-    tags: params.tags || [],
     isStarred: false,
     createdAt: now,
     updatedAt: now,
@@ -262,35 +261,8 @@ export async function searchNotes(query: string): Promise<Note[]> {
   return notes.filter(
     (note) =>
       note.title.toLowerCase().includes(lowerQuery) ||
-      note.content.toLowerCase().includes(lowerQuery) ||
-      note.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+      note.content.toLowerCase().includes(lowerQuery)
   );
-}
-
-/**
- * 按标签筛选笔记
- */
-export async function getNotesByTags(tags: string[]): Promise<Note[]> {
-  if (tags.length === 0) {
-    return await getAllNotes();
-  }
-
-  const notes = await getAllNotes();
-  return notes.filter((note) => tags.some((tag) => note.tags.includes(tag)));
-}
-
-/**
- * 获取所有标签
- */
-export async function getAllTags(): Promise<string[]> {
-  const notes = await getAllNotes();
-  const tagsSet = new Set<string>();
-
-  notes.forEach((note) => {
-    note.tags.forEach((tag) => tagsSet.add(tag));
-  });
-
-  return Array.from(tagsSet).sort();
 }
 
 /**

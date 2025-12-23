@@ -12,8 +12,10 @@ export interface INote extends Document {
   userId: mongoose.Types.ObjectId;
   title: string;
   content: string;
-  tags: string[];
   isStarred: boolean;
+  embedding?: number[]; // 向量表示，用于语义搜索
+  embeddingModel?: string; // 生成 embedding 使用的模型名称
+  lastEmbeddedAt?: Date; // 最后一次生成 embedding 的时间
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,20 +42,22 @@ const NoteSchema = new Schema<INote>(
       default: "",
       maxlength: [100000, "内容长度不能超过100000个字符"],
     },
-    tags: {
-      type: [String],
-      default: [],
-      validate: {
-        validator: function (tags: string[]) {
-          return tags.length <= 20;
-        },
-        message: "标签数量不能超过20个",
-      },
-      index: true,
-    },
     isStarred: {
       type: Boolean,
       default: false,
+    },
+    embedding: {
+      type: [Number],
+      default: undefined,
+      select: false, // 默认查询时不返回（节省带宽）
+    },
+    embeddingModel: {
+      type: String,
+      default: undefined,
+    },
+    lastEmbeddedAt: {
+      type: Date,
+      default: undefined,
     },
   },
   {
@@ -65,7 +69,6 @@ const NoteSchema = new Schema<INote>(
 // 创建索引
 NoteSchema.index({ userId: 1, createdAt: -1 });
 NoteSchema.index({ userId: 1, isStarred: 1 });
-NoteSchema.index({ userId: 1, tags: 1 });
 
 /**
  * 笔记模型

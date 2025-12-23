@@ -15,6 +15,7 @@ import {
   createSuccessResponse,
   createErrorResponse,
 } from "@/app/lib/server/auth";
+import { triggerNoteEmbedding } from "@/app/lib/server";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -58,7 +59,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       id: note._id.toString(),
       title: note.title,
       content: note.content,
-      tags: note.tags,
       isStarred: note.isStarred,
       createdAt: note.createdAt,
       updatedAt: note.updatedAt,
@@ -96,7 +96,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     // 解析请求体
     const body = await request.json();
-    const { title, content, tags, isStarred } = body;
+    const { title, content, isStarred } = body;
 
     // 构建更新对象
     const updates: Record<string, unknown> = {};
@@ -110,10 +110,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     if (content !== undefined) {
       updates.content = content;
-    }
-
-    if (tags !== undefined) {
-      updates.tags = tags;
     }
 
     if (isStarred !== undefined) {
@@ -136,12 +132,17 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return createErrorResponse("笔记不存在", 404);
     }
 
+    // 如果内容相关字段发生变化，异步重新生成 embedding
+    const contentChanged = title !== undefined || content !== undefined;
+    if (contentChanged) {
+      triggerNoteEmbedding(note._id.toString(), note.title, note.content);
+    }
+
     // 返回更新后的笔记信息
     const noteResponse = {
       id: note._id.toString(),
       title: note.title,
       content: note.content,
-      tags: note.tags,
       isStarred: note.isStarred,
       createdAt: note.createdAt,
       updatedAt: note.updatedAt,
@@ -152,8 +153,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     console.error("更新笔记失败:", error);
 
     // 处理 Mongoose 验证错误
-    if (error && typeof error === 'object' && 'name' in error && error.name === "ValidationError") {
-      const validationError = error as { errors?: Record<string, { message: string }> };
+    if (
+      error &&
+      typeof error === "object" &&
+      "name" in error &&
+      error.name === "ValidationError"
+    ) {
+      const validationError = error as {
+        errors?: Record<string, { message: string }>;
+      };
       const messages = Object.values(validationError.errors || {}).map(
         (err) => err.message
       );
@@ -203,4 +211,3 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return createErrorResponse("删除笔记失败", 500);
   }
 }
-

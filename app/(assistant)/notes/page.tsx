@@ -53,8 +53,7 @@ export default function NotesPage() {
       result = result.filter(
         (note) =>
           note.title.toLowerCase().includes(query) ||
-          note.content.toLowerCase().includes(query) ||
-          note.tags.some((tag) => tag.toLowerCase().includes(query))
+          note.content.toLowerCase().includes(query)
       );
     }
 
