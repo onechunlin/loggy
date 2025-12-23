@@ -133,48 +133,23 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 快捷功能卡片 - 移到最上面 */}
+        {/* 快捷功能卡片 */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 border border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <span>⚡</span>
             快捷功能
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              onClick={() => router.push("/playground")}
-              className="flex items-center gap-3 p-4 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              <span className="text-2xl">🎨</span>
-              <div className="text-left">
-                <p className="text-sm font-semibold">实验室</p>
-                <p className="text-xs opacity-90">探索新功能</p>
-              </div>
-            </button>
-
-            <button className="flex items-center gap-3 p-4 bg-gradient-to-br from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-              <span className="text-2xl">📊</span>
-              <div className="text-left">
-                <p className="text-sm font-semibold">数据统计</p>
-                <p className="text-xs opacity-90">查看使用数据</p>
-              </div>
-            </button>
-
-            <button className="flex items-center gap-3 p-4 bg-gradient-to-br from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-              <span className="text-2xl">⚙️</span>
-              <div className="text-left">
-                <p className="text-sm font-semibold">应用设置</p>
-                <p className="text-xs opacity-90">个性化配置</p>
-              </div>
-            </button>
-
-            <button className="flex items-center gap-3 p-4 bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-              <span className="text-2xl">💬</span>
-              <div className="text-left">
-                <p className="text-sm font-semibold">帮助反馈</p>
-                <p className="text-xs opacity-90">联系我们</p>
-              </div>
-            </button>
-          </div>
+          <button
+            onClick={() => router.push("/demo-list")}
+            className="w-full flex items-center gap-4 p-5 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          >
+            <span className="text-3xl">🎨</span>
+            <div className="text-left flex-1">
+              <p className="text-base font-semibold">实验室</p>
+              <p className="text-sm opacity-90">探索新功能与实验性特性</p>
+            </div>
+            <span className="text-xl opacity-75">→</span>
+          </button>
         </div>
 
         {/* 用户信息卡片 */}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface UserInfo {
   profile: {
@@ -29,7 +28,6 @@ interface ApiResponse {
  * 前端直接使用 userInfo.profile.name 会导致 JavaScript 报错
  */
 export default function ApiErrorDemoPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ApiResponse | null>(null);
 
@@ -119,15 +117,6 @@ export default function ApiErrorDemoPage() {
   return (
     <div className="h-full bg-gradient-to-br from-gray-50 to-blue-50/30 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
-        {/* 返回按钮 */}
-        <button
-          onClick={() => router.push("/playground")}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <span className="text-lg">←</span>
-          <span className="text-sm">返回 Playground</span>
-        </button>
-
         {/* 标题 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">

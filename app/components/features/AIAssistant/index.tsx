@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import { CommandCenter, CommandResult } from "@/app/utils/commandCenter";
 import {
   NavigateCommand,
@@ -32,6 +33,7 @@ export default function AIAssistant() {
     []
   );
   const [aiReplyContent, setAiReplyContent] = useState("");
+  const constraintsRef = useRef<HTMLDivElement>(null);
 
   // 组件挂载时注册所有指令
   useEffect(() => {
@@ -274,14 +276,36 @@ export default function AIAssistant() {
 
   return (
     <>
-      {/* AI 助手图标 */}
-      <button
+      {/* 拖拽约束容器 - 覆盖整个视口，四周留出边距 */}
+      <motion.div
+        ref={constraintsRef}
+        className="fixed inset-4 pointer-events-none"
+        style={{ zIndex: -1 }}
+      />
+
+      {/* 可拖拽的 AI 助手图标 */}
+      <motion.button
+        drag
+        dragConstraints={constraintsRef}
+        dragMomentum={false}
+        dragElastic={0.1}
+        dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
         onClick={handleIconClick}
-        className="fixed bottom-20 right-4 z-50 w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-xl flex items-center justify-center hover:shadow-2xl hover:scale-110 transition-all duration-300 group"
+        className="fixed bottom-40 right-4 z-50 w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-xl flex items-center justify-center cursor-move pointer-events-auto"
+        whileHover={{
+          scale: 1.1,
+          boxShadow:
+            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        }}
+        whileTap={{ scale: 0.95 }}
+        whileDrag={{
+          scale: 1.05,
+          boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.25)",
+        }}
         aria-label="打开 AI 助手"
       >
         <svg
-          className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300"
+          className="w-7 h-7 text-white pointer-events-none"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -293,7 +317,7 @@ export default function AIAssistant() {
             d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
           />
         </svg>
-      </button>
+      </motion.button>
 
       {/* 弹窗 */}
       {isModalVisible && (

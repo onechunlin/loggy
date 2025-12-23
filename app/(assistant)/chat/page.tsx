@@ -9,7 +9,7 @@ import MessageInput from "@/app/components/ui/MessageInput";
 import { useChatStream } from "@/app/hooks/use-chat-stream";
 import type { Message } from "@/app/types";
 import { generateId } from "@/app/lib/utils";
-import { saveMessages, loadMessages } from "@/app/lib/client";
+import { loadMessages, clearMessages } from "@/app/lib/client";
 
 /**
  * 对话页面
@@ -45,25 +45,7 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 消息变化时保存到 IndexedDB
-  useEffect(() => {
-    // 跳过初始加载时的保存
-    if (isLoading) {
-      return;
-    }
-
-    const saveMessagesDebounced = async () => {
-      try {
-        await saveMessages(messages);
-      } catch (error) {
-        console.error("保存消息失败:", error);
-      }
-    };
-
-    // 使用防抖避免频繁保存
-    const timer = setTimeout(saveMessagesDebounced, 500);
-    return () => clearTimeout(timer);
-  }, [messages, isLoading]);
+  // 不再需要 useEffect 自动保存，改为在创建/更新时主动保存
 
   const { stream, isStreaming } = useChatStream({
     onContent: (fullContent) => {
@@ -81,8 +63,14 @@ export default function ChatPage() {
         return prev;
       });
     },
-    onDone: () => {
-      // 流式响应完成
+    onDone: async () => {
+      // 流式响应完成，重新加载消息以同步服务器数据
+      try {
+        const serverMessages = await loadMessages();
+        setMessages(serverMessages);
+      } catch (error) {
+        console.error("重新加载消息失败:", error);
+      }
     },
     onError: (errorMessage) => {
       // 使用 Toast 显示错误提示
@@ -112,7 +100,7 @@ export default function ChatPage() {
         setShowWelcome(false);
       }
 
-      // 添加用户消息
+      // 添加用户消息到前端（服务器会在 API 中保存）
       const userMessage: Message = {
         id: generateId(),
         content: message,

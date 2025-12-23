@@ -5,6 +5,7 @@
 
 import { CommandCenter } from "@/app/utils/commandCenter";
 import type { Tool, ToolCall } from "@/app/utils/commandCenter/types";
+import { getAuthToken } from "./api-client";
 
 /**
  * AI Agent请求参数
@@ -98,12 +99,20 @@ export class AIAgentService {
         temperature: requestData.temperature,
       });
 
+      // 获取认证 token
+      const token = getAuthToken();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       // 调用服务端 API（非流式响应）
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           ...requestData,
           stream: false, // 明确指定非流式响应

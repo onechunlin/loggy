@@ -67,13 +67,16 @@ export async function loadMessages(): Promise<Message[]> {
         content: string;
         timestamp: string | Date;
       }
-      
+
       const messages = await apiClient.get<ApiMessage[]>("/api/messages");
       const deserializedMessages = messages.map((msg) => ({
         ...msg,
-        timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp),
+        timestamp:
+          msg.timestamp instanceof Date
+            ? msg.timestamp
+            : new Date(msg.timestamp),
       }));
-      
+
       await saveLocalMessages(deserializedMessages);
       return deserializedMessages;
     }
@@ -85,30 +88,82 @@ export async function loadMessages(): Promise<Message[]> {
 }
 
 /**
- * 保存消息列表
+ * 创建单条消息（立即保存到服务器和本地）
  */
-export async function saveMessages(messages: Message[]): Promise<void> {
-  // 始终保存到本地缓存
-  await saveLocalMessages(messages);
+export async function createMessage(
+  message: Omit<Message, "id">
+): Promise<Message> {
+  const newMessage: Message = {
+    ...message,
+    id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  };
 
-  // 如果在线，同步到服务器
+  // 保存到本地
+  const localMessages = await loadLocalMessages();
+  await saveLocalMessages([...localMessages, newMessage]);
+
+  // 如果在线且内容不为空，保存到服务器
+  if (isOnline() && message.content && message.content.trim().length > 0) {
+    try {
+      await apiClient.post("/api/messages", {
+        role: message.role,
+        content: message.content,
+        timestamp: message.timestamp.toISOString(),
+      });
+    } catch (error) {
+      console.error("保存消息到服务器失败:", error);
+      // 服务器失败不影响本地使用
+    }
+  }
+
+  return newMessage;
+}
+
+/**
+ * 更新单条消息内容（用于流式更新）
+ */
+export async function updateMessageContent(
+  messageId: string,
+  content: string
+): Promise<void> {
+  // 更新本地缓存
+  const localMessages = await loadLocalMessages();
+  const updatedMessages = localMessages.map((msg) =>
+    msg.id === messageId ? { ...msg, content } : msg
+  );
+  await saveLocalMessages(updatedMessages);
+}
+
+/**
+ * 完成消息编辑并同步到服务器
+ */
+export async function finalizeMessage(messageId: string): Promise<void> {
+  const localMessages = await loadLocalMessages();
+  const message = localMessages.find((msg) => msg.id === messageId);
+
+  if (!message || !message.content || message.content.trim().length === 0) {
+    return;
+  }
+
+  // 同步到服务器
   if (isOnline()) {
     try {
-      // 先清空服务器消息
-      await apiClient.delete("/api/messages");
-      
-      // 然后逐条上传
-      for (const msg of messages) {
-        await apiClient.post("/api/messages", {
-          role: msg.role,
-          content: msg.content,
-          timestamp: msg.timestamp.toISOString(),
-        });
-      }
+      await apiClient.post("/api/messages", {
+        role: message.role,
+        content: message.content,
+        timestamp: message.timestamp.toISOString(),
+      });
     } catch (error) {
       console.error("同步消息到服务器失败:", error);
     }
   }
+}
+
+/**
+ * 保存消息列表到本地（仅用于本地缓存）
+ */
+export async function saveMessagesToLocal(messages: Message[]): Promise<void> {
+  await saveLocalMessages(messages);
 }
 
 /**
@@ -133,4 +188,3 @@ export async function getMessageCount(): Promise<number> {
   const messages = await loadMessages();
   return messages.length;
 }
-

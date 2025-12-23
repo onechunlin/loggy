@@ -1,9 +1,9 @@
-import MainLayout from "@/app/components/layout/MainLayout";
+import { SecondaryLayout } from "@/app/components/layout";
 
 export default function PlaygroundLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <MainLayout showTabBar={false}>{children}</MainLayout>;
+  return <SecondaryLayout>{children}</SecondaryLayout>;
 }

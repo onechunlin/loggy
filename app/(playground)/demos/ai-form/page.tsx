@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { DynamicForm, type FormItemConfig } from "@/app/components/ui";
 import {
   AIAssistantEventCenter,
@@ -12,7 +11,6 @@ import {
  * AI 智能表单 Demo 页面
  */
 export default function AIFormDemoPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState<Record<string, any> | null>(null);
 
   const formItems: FormItemConfig[] = [
@@ -70,15 +68,6 @@ export default function AIFormDemoPage() {
   return (
     <div className="h-full bg-gradient-to-br from-gray-50 to-blue-50/30 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
-        {/* 返回按钮 */}
-        <button
-          onClick={() => router.push("/playground")}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <span className="text-lg">←</span>
-          <span className="text-sm">返回 Playground</span>
-        </button>
-
         {/* 标题 */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">

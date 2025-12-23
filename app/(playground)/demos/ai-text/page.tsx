@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { FlexText } from "@/app/components/ui";
 import { AIAssistantEventCenter, AIAssistantEventName } from "@/app/events";
 
@@ -16,8 +15,6 @@ const AI_COMMANDS: string[] = [
  * FlexText 组件演示页面
  */
 export default function FlexTextDemoPage() {
-  const router = useRouter();
-
   const handleAIAssist = (query: string) => {
     AIAssistantEventCenter.emit(AIAssistantEventName.OpenAssistant, {
       query,
@@ -28,15 +25,6 @@ export default function FlexTextDemoPage() {
   return (
     <div className="h-full bg-gradient-to-br from-gray-50 to-blue-50/30 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
-        {/* 返回按钮 */}
-        <button
-          onClick={() => router.push("/playground")}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <span className="text-lg">←</span>
-          <span className="text-sm">返回 Playground</span>
-        </button>
-
         {/* 标题 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">📝 AI 文本演示</h1>

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-import { streamChat, chat } from "@/app/lib/server";
+import { streamChat, chat, connectDB, authMiddleware } from "@/app/lib/server";
+import { Message } from "@/app/lib/server/models";
 import type { ChatRequestParams } from "@/app/types";
 
 /**
@@ -16,6 +17,19 @@ import type { ChatRequestParams } from "@/app/types";
  */
 export async function POST(request: NextRequest) {
   try {
+    // 验证认证
+    const authResult = await authMiddleware(request);
+    if (!authResult.success) {
+      return new Response(
+        JSON.stringify({ error: authResult.error || "认证失败" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const userId = authResult.userId!;
     const body = (await request.json()) as ChatRequestParams;
 
     // 验证必需参数
@@ -29,9 +43,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 连接数据库
+    await connectDB();
+
+    // 获取最后一条用户消息（最新发送的）
+    const lastUserMessage = body.messages
+      .filter((msg) => msg.role === "user")
+      .pop();
+
+    // 保存用户消息到数据库
+    let userMessageDoc = null;
+    if (lastUserMessage && lastUserMessage.content) {
+      userMessageDoc = await Message.create({
+        userId,
+        role: "user",
+        content: lastUserMessage.content,
+        timestamp: new Date(),
+      });
+    }
+
     // 如果 stream 为 false，返回非流式响应（用于工具调用）
     if (body.stream === false) {
       const response = await chat(body);
+
+      // 保存 assistant 消息
+      if (response.content) {
+        await Message.create({
+          userId,
+          role: "assistant",
+          content: response.content,
+          timestamp: new Date(),
+        });
+      }
+
       return new Response(JSON.stringify(response), {
         headers: { "Content-Type": "application/json" },
       });
@@ -40,6 +84,8 @@ export async function POST(request: NextRequest) {
     // 默认使用流式响应
     // 创建 SSE 流
     const encoder = new TextEncoder();
+    let fullContent = "";
+
     const stream = new ReadableStream({
       async start(controller) {
         try {
@@ -52,6 +98,8 @@ export async function POST(request: NextRequest) {
 
           // 流式处理 Deepseek 响应
           for await (const chunk of streamChat(body)) {
+            fullContent += chunk;
+
             const event = {
               type: "content",
               data: chunk,
@@ -61,6 +109,16 @@ export async function POST(request: NextRequest) {
                 `event: content\ndata: ${JSON.stringify(event)}\n\n`
               )
             );
+          }
+
+          // 流式响应完成后，保存 assistant 消息
+          if (fullContent && fullContent.trim().length > 0) {
+            await Message.create({
+              userId,
+              role: "assistant",
+              content: fullContent,
+              timestamp: new Date(),
+            });
           }
 
           // 发送完成事件

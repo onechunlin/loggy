@@ -31,7 +31,7 @@ export class ApiError extends Error {
 /**
  * 获取认证令牌
  */
-function getAuthToken(): string | null {
+export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("loggy_auth_token");
 }
