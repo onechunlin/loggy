@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import {
   TodoCard,
   TodoForm,
@@ -16,7 +17,6 @@ import {
   toggleTodoComplete,
 } from "@/app/lib/client";
 import type { Todo } from "@/app/types";
-import { useToast } from "@/app/hooks/use-toast";
 
 /**
  * 待办列表页面
@@ -27,7 +27,6 @@ export default function TodosPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
-  const { showToast, ToastComponent } = useToast();
 
   // 延迟加载待办，避免阻塞渲染
   useEffect(() => {
@@ -103,19 +102,19 @@ export default function TodosPage() {
         const updated = await updateTodo(editingTodo.id, data);
         if (updated) {
           setTodos(todos.map((t) => (t.id === updated.id ? updated : t)));
-          showToast("已更新", 1000);
+          toast.success("已更新");
         }
       } else {
         // 创建
         const newTodo = await createTodo(data);
         setTodos([newTodo, ...todos]);
-        showToast("已添加", 1000);
+        toast.success("已添加");
       }
       setShowForm(false);
       setEditingTodo(null);
     } catch (error) {
       console.error("操作失败:", error);
-      showToast("操作失败", 2000);
+      toast.error("操作失败");
     }
   };
 
@@ -144,10 +143,10 @@ export default function TodosPage() {
     try {
       await deleteTodo(id);
       setTodos(todos.filter((t) => t.id !== id));
-      showToast("已删除", 1000);
+      toast.success("已删除");
     } catch (error) {
       console.error("删除失败:", error);
-      showToast("删除失败", 2000);
+      toast.error("删除失败");
     }
   };
 
@@ -171,9 +170,6 @@ export default function TodosPage() {
 
   return (
     <div className="h-full bg-gradient-to-br from-gray-50 to-orange-50/30">
-      {/* Toast */}
-      {ToastComponent}
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* 头部 */}
         <div className="mb-6 sm:mb-8">

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "antd-mobile/es/global";
+import { Toaster } from "sonner";
 import {
   APP_NAME,
   APP_DEFAULT_TITLE,
@@ -56,6 +57,7 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body>
         {children}
+        <Toaster richColors position="top-center" />
         <VConsole />
       </body>
     </html>

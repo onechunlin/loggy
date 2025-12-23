@@ -5,3 +5,7 @@
 
 export * from "./openai-service";
 
+// MongoDB 和认证
+export { connectDB, disconnectDB, getConnectionStatus } from "./mongodb";
+export * from "./auth";
+export * from "./models";

@@ -2,11 +2,11 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import WelcomeBanner from "@/app/components/features/WelcomeBanner";
 import ChatContainer from "@/app/components/features/ChatContainer";
 import MessageInput from "@/app/components/ui/MessageInput";
 import { useChatStream } from "@/app/hooks/use-chat-stream";
-import { useToast } from "@/app/hooks/use-toast";
 import type { Message } from "@/app/types";
 import { generateId } from "@/app/lib/utils";
 import { saveMessages, loadMessages } from "@/app/lib/client";
@@ -18,7 +18,6 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(true);
-  const { showToast, ToastComponent } = useToast();
 
   // 组件挂载时延迟加载历史消息，避免阻塞渲染
   useEffect(() => {
@@ -31,7 +30,7 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error("加载历史消息失败:", error);
-        showToast("加载历史消息失败", 2000);
+        toast.error("加载历史消息失败");
       } finally {
         setIsLoading(false);
       }
@@ -86,8 +85,8 @@ export default function ChatPage() {
       // 流式响应完成
     },
     onError: (errorMessage) => {
-      // 使用自定义 Toast 显示错误提示
-      showToast(`错误: ${errorMessage}`, 3000);
+      // 使用 Toast 显示错误提示
+      toast.error(`错误: ${errorMessage}`);
       // 移除正在生成的消息
       setMessages((prev) => {
         const newMessages = [...prev];
@@ -169,9 +168,6 @@ export default function ChatPage() {
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full blur-3xl opacity-30 animate-pulse-slow" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-pink-100 to-blue-100 rounded-full blur-3xl opacity-30 animate-pulse-slower" />
       </div>
-
-      {/* Toast 提示 */}
-      {ToastComponent}
 
       {/* 主内容区域 */}
       <main className="flex-1 flex flex-col min-h-0 relative z-10">

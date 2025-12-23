@@ -56,6 +56,8 @@ export interface RegisterForm {
   confirmPassword: string;
   /** 用户邮箱 */
   email?: string;
+  /** 注册码 */
+  registrationCode?: string;
 }
 
 /**
@@ -69,4 +71,3 @@ export interface AuthState {
   /** 认证令牌 */
   token: string | null;
 }
-

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { NoteEditor } from "./components";
 import {
   getNoteById,
@@ -12,7 +13,6 @@ import {
 } from "@/app/lib/client";
 import type { Note } from "@/app/types";
 import { formatDateTime } from "@/app/lib/date-utils";
-import { useToast } from "@/app/hooks/use-toast";
 
 /**
  * 笔记详情页面
@@ -21,7 +21,6 @@ export default function NoteDetailPage() {
   const router = useRouter();
   const params = useParams();
   const noteId = params.id as string;
-  const { showToast, ToastComponent } = useToast();
 
   const [note, setNote] = useState<Note | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,12 +44,12 @@ export default function NoteDetailPage() {
             content: loadedNote.content,
           });
         } else {
-          showToast("笔记不存在", 2000);
+          toast.error("笔记不存在");
           router.push("/notes");
         }
       } catch (error) {
         console.error("加载笔记失败:", error);
-        showToast("加载笔记失败", 2000);
+        toast.error("加载笔记失败");
       } finally {
         setIsLoading(false);
       }
@@ -102,7 +101,7 @@ export default function NoteDetailPage() {
         }
       } catch (error) {
         console.error("保存失败:", error);
-        showToast("保存失败", 2000);
+        toast.error("保存失败");
       } finally {
         setIsSaving(false);
         savingRef.current = false;
@@ -120,7 +119,7 @@ export default function NoteDetailPage() {
       const updatedNote = await toggleNoteStar(noteId);
       if (updatedNote) {
         setNote(updatedNote);
-        showToast(updatedNote.isStarred ? "已收藏" : "已取消收藏", 1000);
+        toast.success(updatedNote.isStarred ? "已收藏" : "已取消收藏");
       }
     } catch (error) {
       console.error("切换收藏失败:", error);
@@ -133,11 +132,11 @@ export default function NoteDetailPage() {
 
     try {
       await deleteNote(noteId);
-      showToast("已删除", 1000);
+      toast.success("已删除");
       router.push("/notes");
     } catch (error) {
       console.error("删除失败:", error);
-      showToast("删除失败", 2000);
+      toast.error("删除失败");
     }
   };
 
@@ -173,9 +172,6 @@ export default function NoteDetailPage() {
 
   return (
     <div className="h-full bg-white flex flex-col">
-      {/* Toast */}
-      {ToastComponent}
-
       {/* 顶部工具栏 */}
       <div className="flex-shrink-0 border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">

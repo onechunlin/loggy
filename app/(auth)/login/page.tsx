@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useAuth } from "@/app/hooks/use-auth";
 import type { LoginForm, RegisterForm } from "@/app/types/user";
 
@@ -14,7 +15,6 @@ export default function LoginPage() {
   const { login, register, isAuthenticated } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
 
   // 登录表单
   const [loginForm, setLoginForm] = useState<LoginForm>({
@@ -30,6 +30,7 @@ export default function LoginPage() {
     password: "",
     confirmPassword: "",
     email: "",
+    registrationCode: "",
   });
 
   // 如果已登录，跳转到首页
@@ -42,18 +43,18 @@ export default function LoginPage() {
   // 处理登录
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
-      const result = login(loginForm);
+      const result = await login(loginForm);
       if (result.success) {
+        toast.success("登录成功");
         router.push("/");
       } else {
-        setError(result.message);
+        toast.error(result.message);
       }
     } catch (err) {
-      setError("登录失败，请稍后重试");
+      toast.error("登录失败，请稍后重试");
     } finally {
       setIsLoading(false);
     }
@@ -62,18 +63,18 @@ export default function LoginPage() {
   // 处理注册
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
-      const result = register(registerForm);
+      const result = await register(registerForm);
       if (result.success) {
+        toast.success("注册成功");
         router.push("/");
       } else {
-        setError(result.message);
+        toast.error(result.message);
       }
     } catch (err) {
-      setError("注册失败，请稍后重试");
+      toast.error("注册失败，请稍后重试");
     } finally {
       setIsLoading(false);
     }
@@ -97,10 +98,7 @@ export default function LoginPage() {
           {/* 标签切换 */}
           <div className="flex gap-2 mb-6">
             <button
-              onClick={() => {
-                setMode("login");
-                setError("");
-              }}
+              onClick={() => setMode("login")}
               className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                 mode === "login"
                   ? "bg-blue-500 text-white"
@@ -110,10 +108,7 @@ export default function LoginPage() {
               登录
             </button>
             <button
-              onClick={() => {
-                setMode("register");
-                setError("");
-              }}
+              onClick={() => setMode("register")}
               className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                 mode === "register"
                   ? "bg-blue-500 text-white"
@@ -123,13 +118,6 @@ export default function LoginPage() {
               注册
             </button>
           </div>
-
-          {/* 错误提示 */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
-              {error}
-            </div>
-          )}
 
           {/* 登录表单 */}
           {mode === "login" && (
@@ -197,6 +185,28 @@ export default function LoginPage() {
           {/* 注册表单 */}
           {mode === "register" && (
             <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  注册码 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={registerForm.registrationCode}
+                  onChange={(e) =>
+                    setRegisterForm({
+                      ...registerForm,
+                      registrationCode: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="请输入注册码"
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  需要注册码才能创建账户
+                </p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   用户名 <span className="text-red-500">*</span>

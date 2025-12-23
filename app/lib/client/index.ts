@@ -11,3 +11,7 @@ export * from "./message-storage";
 export * from "./note-storage";
 export * from "./todo-storage";
 export * from "./user-storage";
+
+// API 客户端
+export { apiClient, saveAuthToken, clearAuthToken, isOnline } from "./api-client";
+export type { ApiResponse } from "./api-client";

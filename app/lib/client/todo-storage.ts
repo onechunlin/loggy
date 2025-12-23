@@ -1,10 +1,10 @@
 /**
- * 待办事项存储服务
- * 使用 localforage 和 IndexedDB 存储待办事项
+ * 待办事项存储服务（使用 API 优先 + 离线降级策略）
  */
 
 import localforage from "localforage";
 import type { Todo, CreateTodoParams, UpdateTodoParams } from "@/app/types";
+import { apiClient, isOnline } from "./api-client";
 
 // 配置 localforage
 const todoStore = localforage.createInstance({
@@ -14,45 +14,44 @@ const todoStore = localforage.createInstance({
   driver: localforage.INDEXEDDB,
 });
 
-/**
- * 待办存储键
- */
 const TODOS_KEY = "all_todos";
 
 /**
- * 序列化待办（Date -> ISO String）
+ * 序列化待办
  */
 function serializeTodo(todo: Todo) {
   return {
     ...todo,
-    dueDate: todo.dueDate?.toISOString(),
-    createdAt: todo.createdAt.toISOString(),
-    updatedAt: todo.updatedAt.toISOString(),
+    dueDate: todo.dueDate instanceof Date ? todo.dueDate.toISOString() : todo.dueDate,
+    createdAt: todo.createdAt instanceof Date ? todo.createdAt.toISOString() : todo.createdAt,
+    updatedAt: todo.updatedAt instanceof Date ? todo.updatedAt.toISOString() : todo.updatedAt,
   };
 }
 
 /**
- * 反序列化待办（ISO String -> Date）
+ * 反序列化待办
  */
 function deserializeTodo(
   todo: Omit<Todo, "createdAt" | "updatedAt" | "dueDate"> & {
-    createdAt: string;
-    updatedAt: string;
-    dueDate?: string;
+    createdAt: string | Date;
+    updatedAt: string | Date;
+    dueDate?: string | Date;
   }
 ): Todo {
   return {
     ...todo,
-    dueDate: todo.dueDate ? new Date(todo.dueDate) : undefined,
-    createdAt: new Date(todo.createdAt),
-    updatedAt: new Date(todo.updatedAt),
+    dueDate: todo.dueDate 
+      ? (todo.dueDate instanceof Date ? todo.dueDate : new Date(todo.dueDate))
+      : undefined,
+    createdAt: todo.createdAt instanceof Date ? todo.createdAt : new Date(todo.createdAt),
+    updatedAt: todo.updatedAt instanceof Date ? todo.updatedAt : new Date(todo.updatedAt),
   };
 }
 
 /**
- * 获取所有待办
+ * 从本地缓存获取所有待办
  */
-export async function getAllTodos(): Promise<Todo[]> {
+async function getLocalTodos(): Promise<Todo[]> {
   try {
     const stored = await todoStore.getItem<
       Array<
@@ -70,22 +69,39 @@ export async function getAllTodos(): Promise<Todo[]> {
 
     return stored.map(deserializeTodo);
   } catch (error) {
-    console.error("加载待办失败:", error);
+    console.error("加载本地待办失败:", error);
     return [];
   }
 }
 
 /**
- * 保存所有待办
+ * 保存待办到本地缓存
  */
-async function saveAllTodos(todos: Todo[]): Promise<void> {
+async function saveLocalTodos(todos: Todo[]): Promise<void> {
   try {
     const serialized = todos.map(serializeTodo);
     await todoStore.setItem(TODOS_KEY, serialized);
   } catch (error) {
-    console.error("保存待办失败:", error);
-    throw error;
+    console.error("保存本地待办失败:", error);
   }
+}
+
+/**
+ * 获取所有待办
+ */
+export async function getAllTodos(): Promise<Todo[]> {
+  try {
+    if (isOnline()) {
+      const todos = await apiClient.get<Todo[]>("/api/todos");
+      const deserializedTodos = todos.map(deserializeTodo);
+      await saveLocalTodos(deserializedTodos);
+      return deserializedTodos;
+    }
+  } catch (error) {
+    console.error("从 API 获取待办失败，使用本地缓存:", error);
+  }
+
+  return await getLocalTodos();
 }
 
 /**
@@ -93,12 +109,16 @@ async function saveAllTodos(todos: Todo[]): Promise<void> {
  */
 export async function getTodoById(id: string): Promise<Todo | null> {
   try {
-    const todos = await getAllTodos();
-    return todos.find((todo) => todo.id === id) || null;
+    if (isOnline()) {
+      const todo = await apiClient.get<Todo>(`/api/todos/${id}`);
+      return deserializeTodo(todo);
+    }
   } catch (error) {
-    console.error("获取待办失败:", error);
-    return null;
+    console.error("从 API 获取待办失败，使用本地缓存:", error);
   }
+
+  const todos = await getLocalTodos();
+  return todos.find((todo) => todo.id === id) || null;
 }
 
 /**
@@ -106,27 +126,37 @@ export async function getTodoById(id: string): Promise<Todo | null> {
  */
 export async function createTodo(params: CreateTodoParams): Promise<Todo> {
   try {
-    const now = new Date();
-    const newTodo: Todo = {
-      id: `todo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      title: params.title,
-      description: params.description,
-      completed: false,
-      dueDate: params.dueDate,
-      tags: params.tags || [],
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const todos = await getAllTodos();
-    todos.unshift(newTodo); // 新待办放在最前面
-    await saveAllTodos(todos);
-
-    return newTodo;
+    if (isOnline()) {
+      const todo = await apiClient.post<Todo>("/api/todos", params);
+      const deserializedTodo = deserializeTodo(todo);
+      
+      const localTodos = await getLocalTodos();
+      localTodos.unshift(deserializedTodo);
+      await saveLocalTodos(localTodos);
+      
+      return deserializedTodo;
+    }
   } catch (error) {
-    console.error("创建待办失败:", error);
-    throw error;
+    console.error("创建待办 API 失败，使用本地存储:", error);
   }
+
+  const now = new Date();
+  const newTodo: Todo = {
+    id: `todo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    title: params.title,
+    description: params.description,
+    completed: false,
+    dueDate: params.dueDate,
+    tags: params.tags || [],
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const todos = await getLocalTodos();
+  todos.unshift(newTodo);
+  await saveLocalTodos(todos);
+
+  return newTodo;
 }
 
 /**
@@ -137,27 +167,40 @@ export async function updateTodo(
   params: UpdateTodoParams
 ): Promise<Todo | null> {
   try {
-    const todos = await getAllTodos();
-    const index = todos.findIndex((todo) => todo.id === id);
-
-    if (index === -1) {
-      return null;
+    if (isOnline()) {
+      const todo = await apiClient.patch<Todo>(`/api/todos/${id}`, params);
+      const deserializedTodo = deserializeTodo(todo);
+      
+      const localTodos = await getLocalTodos();
+      const index = localTodos.findIndex((t) => t.id === id);
+      if (index !== -1) {
+        localTodos[index] = deserializedTodo;
+        await saveLocalTodos(localTodos);
+      }
+      
+      return deserializedTodo;
     }
-
-    const updatedTodo: Todo = {
-      ...todos[index],
-      ...params,
-      updatedAt: new Date(),
-    };
-
-    todos[index] = updatedTodo;
-    await saveAllTodos(todos);
-
-    return updatedTodo;
   } catch (error) {
-    console.error("更新待办失败:", error);
-    throw error;
+    console.error("更新待办 API 失败，使用本地存储:", error);
   }
+
+  const todos = await getLocalTodos();
+  const index = todos.findIndex((todo) => todo.id === id);
+
+  if (index === -1) {
+    return null;
+  }
+
+  const updatedTodo: Todo = {
+    ...todos[index],
+    ...params,
+    updatedAt: new Date(),
+  };
+
+  todos[index] = updatedTodo;
+  await saveLocalTodos(todos);
+
+  return updatedTodo;
 }
 
 /**
@@ -165,144 +208,112 @@ export async function updateTodo(
  */
 export async function deleteTodo(id: string): Promise<boolean> {
   try {
-    const todos = await getAllTodos();
-    const filteredTodos = todos.filter((todo) => todo.id !== id);
-
-    if (filteredTodos.length === todos.length) {
-      return false; // 没有找到要删除的待办
+    if (isOnline()) {
+      await apiClient.delete(`/api/todos/${id}`);
+      
+      const localTodos = await getLocalTodos();
+      const filteredTodos = localTodos.filter((todo) => todo.id !== id);
+      await saveLocalTodos(filteredTodos);
+      
+      return true;
     }
-
-    await saveAllTodos(filteredTodos);
-    return true;
   } catch (error) {
-    console.error("删除待办失败:", error);
-    throw error;
+    console.error("删除待办 API 失败，使用本地存储:", error);
   }
+
+  const todos = await getLocalTodos();
+  const filteredTodos = todos.filter((todo) => todo.id !== id);
+
+  if (filteredTodos.length === todos.length) {
+    return false;
+  }
+
+  await saveLocalTodos(filteredTodos);
+  return true;
 }
 
 /**
  * 切换待办完成状态
  */
 export async function toggleTodoComplete(id: string): Promise<Todo | null> {
-  try {
-    const todos = await getAllTodos();
-    const todo = todos.find((t) => t.id === id);
+  const todo = await getTodoById(id);
+  if (!todo) return null;
 
-    if (!todo) {
-      return null;
-    }
-
-    return await updateTodo(id, { completed: !todo.completed });
-  } catch (error) {
-    console.error("切换完成状态失败:", error);
-    throw error;
-  }
+  return await updateTodo(id, { completed: !todo.completed });
 }
 
 /**
  * 获取未完成的待办
  */
 export async function getPendingTodos(): Promise<Todo[]> {
-  try {
-    const todos = await getAllTodos();
-    return todos.filter((todo) => !todo.completed);
-  } catch (error) {
-    console.error("获取未完成待办失败:", error);
-    return [];
-  }
+  const todos = await getAllTodos();
+  return todos.filter((todo) => !todo.completed);
 }
 
 /**
  * 获取已完成的待办
  */
 export async function getCompletedTodos(): Promise<Todo[]> {
-  try {
-    const todos = await getAllTodos();
-    return todos.filter((todo) => todo.completed);
-  } catch (error) {
-    console.error("获取已完成待办失败:", error);
-    return [];
-  }
+  const todos = await getAllTodos();
+  return todos.filter((todo) => todo.completed);
 }
 
 /**
  * 获取今天到期的待办
  */
 export async function getTodayTodos(): Promise<Todo[]> {
-  try {
-    const todos = await getAllTodos();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+  const todos = await getAllTodos();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
-    return todos.filter((todo) => {
-      if (!todo.dueDate) return false;
-      const dueDate = new Date(todo.dueDate);
-      return dueDate >= today && dueDate < tomorrow;
-    });
-  } catch (error) {
-    console.error("获取今日待办失败:", error);
-    return [];
-  }
+  return todos.filter((todo) => {
+    if (!todo.dueDate) return false;
+    const dueDate = new Date(todo.dueDate);
+    return dueDate >= today && dueDate < tomorrow;
+  });
 }
 
 /**
  * 获取逾期的待办
  */
 export async function getOverdueTodos(): Promise<Todo[]> {
-  try {
-    const todos = await getAllTodos();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const todos = await getAllTodos();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    return todos.filter((todo) => {
-      if (!todo.dueDate || todo.completed) return false;
-      const dueDate = new Date(todo.dueDate);
-      return dueDate < today;
-    });
-  } catch (error) {
-    console.error("获取逾期待办失败:", error);
-    return [];
-  }
+  return todos.filter((todo) => {
+    if (!todo.dueDate || todo.completed) return false;
+    const dueDate = new Date(todo.dueDate);
+    return dueDate < today;
+  });
 }
 
 /**
  * 按标签筛选待办
  */
 export async function getTodosByTags(tags: string[]): Promise<Todo[]> {
-  try {
-    if (tags.length === 0) {
-      return await getAllTodos();
-    }
-
-    const todos = await getAllTodos();
-    return todos.filter((todo) =>
-      tags.some((tag) => todo.tags.includes(tag))
-    );
-  } catch (error) {
-    console.error("按标签筛选失败:", error);
-    return [];
+  if (tags.length === 0) {
+    return await getAllTodos();
   }
+
+  const todos = await getAllTodos();
+  return todos.filter((todo) => tags.some((tag) => todo.tags.includes(tag)));
 }
 
 /**
  * 获取所有标签
  */
 export async function getAllTodoTags(): Promise<string[]> {
-  try {
-    const todos = await getAllTodos();
-    const tagsSet = new Set<string>();
+  const todos = await getAllTodos();
+  const tagsSet = new Set<string>();
 
-    todos.forEach((todo) => {
-      todo.tags.forEach((tag) => tagsSet.add(tag));
-    });
+  todos.forEach((todo) => {
+    todo.tags.forEach((tag) => tagsSet.add(tag));
+  });
 
-    return Array.from(tagsSet).sort();
-  } catch (error) {
-    console.error("获取标签失败:", error);
-    return [];
-  }
+  return Array.from(tagsSet).sort();
 }
 
 /**
@@ -310,23 +321,22 @@ export async function getAllTodoTags(): Promise<string[]> {
  */
 export async function clearAllTodos(): Promise<void> {
   try {
-    await todoStore.removeItem(TODOS_KEY);
+    if (isOnline()) {
+      const todos = await getAllTodos();
+      await Promise.all(todos.map((todo) => deleteTodo(todo.id)));
+    }
   } catch (error) {
-    console.error("清空待办失败:", error);
-    throw error;
+    console.error("清空待办 API 失败:", error);
   }
+
+  await todoStore.removeItem(TODOS_KEY);
 }
 
 /**
  * 获取待办数量
  */
 export async function getTodosCount(): Promise<number> {
-  try {
-    const todos = await getAllTodos();
-    return todos.length;
-  } catch (error) {
-    console.error("获取待办数量失败:", error);
-    return 0;
-  }
+  const todos = await getAllTodos();
+  return todos.length;
 }
 
