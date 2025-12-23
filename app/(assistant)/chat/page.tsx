@@ -12,6 +12,12 @@ import { generateId } from "@/app/lib/utils";
 import { loadMessages, clearMessages } from "@/app/lib/client";
 
 /**
+ * 上下文窗口配置
+ * 限制发送给 AI 的历史消息数量，避免上下文过长
+ */
+const MAX_CONTEXT_MESSAGES = 10; // 最近 10 条消息（约 5 轮对话）
+
+/**
  * 对话页面
  */
 export default function ChatPage() {
@@ -48,6 +54,22 @@ export default function ChatPage() {
   // 不再需要 useEffect 自动保存，改为在创建/更新时主动保存
 
   const { stream, isStreaming } = useChatStream({
+    onReferences: (refs) => {
+      // 接收引用的笔记，更新最后一条 assistant 消息
+      console.log("[Chat] 收到引用笔记:", refs);
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage && lastMessage.role === "assistant") {
+          newMessages[newMessages.length - 1] = {
+            ...lastMessage,
+            references: refs,
+          };
+          return newMessages;
+        }
+        return prev;
+      });
+    },
     onContent: (fullContent) => {
       // 直接更新最后一条消息的完整内容
       setMessages((prev) => {
@@ -63,14 +85,10 @@ export default function ChatPage() {
         return prev;
       });
     },
-    onDone: async () => {
-      // 流式响应完成，重新加载消息以同步服务器数据
-      try {
-        const serverMessages = await loadMessages();
-        setMessages(serverMessages);
-      } catch (error) {
-        console.error("重新加载消息失败:", error);
-      }
+    onDone: () => {
+      // 流式响应完成
+      // 注意：不需要重新加载消息，因为内容和引用都已通过回调实时更新
+      console.log("[Chat] 流式响应完成");
     },
     onError: (errorMessage) => {
       // 使用 Toast 显示错误提示
@@ -119,7 +137,15 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, userMessage, assistantMessage]);
 
       // 构建消息历史（转换为 API 格式）
-      const messageHistory = [...messages, userMessage].map((msg) => ({
+      // 限制上下文窗口：只发送最近的消息，避免上下文过长
+      const allMessages = [...messages, userMessage];
+      const recentMessages = allMessages.slice(-MAX_CONTEXT_MESSAGES);
+
+      console.log(
+        `[Chat] 发送消息上下文: 总消息数 ${allMessages.length}, 发送最近 ${recentMessages.length} 条`
+      );
+
+      const messageHistory = recentMessages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       }));

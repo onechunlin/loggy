@@ -15,6 +15,7 @@ export interface Message {
   content: string;
   role: MessageRole;
   timestamp: Date;
+  references?: ReferencedNote[]; // 引用的笔记（仅 assistant 消息）
 }
 
 /**
@@ -70,3 +71,19 @@ export interface ChatStats {
   thisMonth: number;
 }
 
+/**
+ * 引用的笔记
+ */
+export interface ReferencedNote {
+  noteId: string;
+  title: string;
+  content: string;
+  similarity: number;
+}
+
+/**
+ * 带有引用笔记的 SSE 事件
+ */
+export interface SSEEventWithReferences extends SSEEvent {
+  references?: ReferencedNote[];
+}

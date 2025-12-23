@@ -5,6 +5,16 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 /**
+ * 引用的笔记（轻量级，只包含必要信息）
+ */
+interface ReferencedNoteData {
+  noteId: string;
+  title: string;
+  content: string;
+  similarity: number;
+}
+
+/**
  * 消息文档接口
  */
 export interface IMessage extends Document {
@@ -13,6 +23,7 @@ export interface IMessage extends Document {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  references?: ReferencedNoteData[]; // 引用的笔记（仅 assistant 消息）
 }
 
 /**
@@ -41,6 +52,17 @@ const MessageSchema = new Schema<IMessage>(
       default: Date.now,
       index: true,
     },
+    references: {
+      type: [
+        {
+          noteId: { type: String, required: true },
+          title: { type: String, required: true },
+          content: { type: String, required: true },
+          similarity: { type: Number, required: true },
+        },
+      ],
+      default: undefined,
+    },
   },
   {
     collection: "messages",
@@ -54,8 +76,6 @@ MessageSchema.index({ userId: 1, timestamp: -1 });
  * 消息模型
  */
 const Message: Model<IMessage> =
-  mongoose.models.Message ||
-  mongoose.model<IMessage>("Message", MessageSchema);
+  mongoose.models.Message || mongoose.model<IMessage>("Message", MessageSchema);
 
 export default Message;
-

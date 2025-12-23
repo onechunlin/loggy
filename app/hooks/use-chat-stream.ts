@@ -2,12 +2,17 @@
 
 import { useCallback, useRef, useState } from "react";
 import { getAuthToken } from "@/app/lib/client";
-import type { ChatRequestParams, SSEEvent } from "@/app/types";
+import type {
+  ChatRequestParams,
+  ReferencedNote,
+  SSEEventWithReferences,
+} from "@/app/types";
 
 interface UseChatStreamOptions {
   onContent?: (content: string) => void;
   onDone?: () => void;
   onError?: (error: string) => void;
+  onReferences?: (references: ReferencedNote[]) => void;
 }
 
 interface UseChatStreamReturn {
@@ -114,9 +119,15 @@ export function useChatStream(
 
             if (eventType && eventData) {
               try {
-                const event: SSEEvent = JSON.parse(eventData);
+                const event: SSEEventWithReferences = JSON.parse(eventData);
 
                 switch (eventType) {
+                  case "start":
+                    // 处理引用的笔记
+                    if (event.references && options.onReferences) {
+                      options.onReferences(event.references);
+                    }
+                    break;
                   case "content":
                     if (event.data) {
                       // 追加到完整内容

@@ -37,6 +37,7 @@ const MessageItem = memo(
             <AssistantMessage
               content={message.content}
               isStreaming={showThinking}
+              references={message.references}
             />
           </div>
         ) : (

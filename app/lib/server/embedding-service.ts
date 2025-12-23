@@ -217,3 +217,129 @@ export function getModelInfo() {
     dimensions: VECTOR_DIMENSIONS,
   };
 }
+
+/**
+ * 计算两个向量的余弦相似度
+ * @param vecA 向量 A
+ * @param vecB 向量 B
+ * @returns 相似度分数 (0-1)
+ */
+export function cosineSimilarity(vecA: number[], vecB: number[]): number {
+  if (vecA.length !== vecB.length) {
+    throw new Error("向量维度不匹配");
+  }
+
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+
+  normA = Math.sqrt(normA);
+  normB = Math.sqrt(normB);
+
+  if (normA === 0 || normB === 0) {
+    return 0;
+  }
+
+  return dotProduct / (normA * normB);
+}
+
+/**
+ * 搜索相关笔记（基于向量相似度）
+ * @param queryEmbedding 查询向量
+ * @param userId 用户 ID
+ * @param limit 返回结果数量限制（默认 5）
+ * @param threshold 相似度阈值 (0-1)，默认 0.7
+ * @returns 相关笔记列表，包含相似度分数
+ */
+export async function searchSimilarNotes(
+  queryEmbedding: number[],
+  userId: string,
+  limit = 5,
+  threshold = 0.7
+): Promise<
+  Array<{
+    noteId: string;
+    title: string;
+    content: string;
+    similarity: number;
+  }>
+> {
+  try {
+    // 动态导入 Note 模型
+    const { Note } = await import("./models");
+    const mongoose = await import("mongoose");
+
+    // 查询所有有 embedding 的笔记（只获取必要字段）
+    const notes = await Note.find({
+      userId: new mongoose.Types.ObjectId(userId),
+      embedding: { $exists: true, $ne: null },
+    })
+      .select("_id title content embedding")
+      .lean();
+
+    if (notes.length === 0) {
+      console.log("[RAG] 没有找到包含 embedding 的笔记");
+      return [];
+    }
+
+    console.log(`[RAG] 找到 ${notes.length} 个包含 embedding 的笔记`);
+
+    // 计算相似度并排序
+    const allResults = notes.map((note) => {
+      const similarity = cosineSimilarity(
+        queryEmbedding,
+        note.embedding as number[]
+      );
+      return {
+        noteId: note._id.toString(),
+        title: note.title,
+        content: note.content || "",
+        similarity,
+      };
+    });
+
+    // 打印所有笔记的相似度（按相似度排序）
+    const sortedResults = [...allResults].sort(
+      (a, b) => b.similarity - a.similarity
+    );
+    console.log("[RAG] 所有笔记相似度排序:");
+    sortedResults.forEach((result, index) => {
+      console.log(
+        `  ${index + 1}. [${result.similarity.toFixed(
+          4
+        )}] ${result.title.substring(0, 30)}${
+          result.title.length > 30 ? "..." : ""
+        }`
+      );
+    });
+
+    // 过滤和限制结果
+    const results = allResults
+      .filter((result) => result.similarity >= threshold)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit);
+
+    console.log(
+      `[RAG] 阈值 ${threshold}，找到 ${results.length} 个相似度 >= ${threshold} 的笔记`
+    );
+    if (results.length > 0) {
+      console.log("[RAG] 返回的笔记:");
+      results.forEach((result, index) => {
+        console.log(
+          `  ${index + 1}. [${result.similarity.toFixed(4)}] ${result.title}`
+        );
+      });
+    }
+
+    return results;
+  } catch (error) {
+    console.error("[RAG] 搜索相关笔记失败:", error);
+    return [];
+  }
+}
