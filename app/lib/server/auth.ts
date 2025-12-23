@@ -3,12 +3,12 @@
  */
 
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { NextRequest } from "next/server";
 import mongoose from "mongoose";
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || "7d") as string;
 
 if (!JWT_SECRET) {
   throw new Error("请在 .env.local 文件中定义 JWT_SECRET 环境变量");
@@ -70,7 +70,7 @@ export function generateToken(userId: string, username: string): string {
   };
 
   return jwt.sign(payload, JWT_SECRET!, {
-    expiresIn: JWT_EXPIRES_IN,
+    expiresIn: JWT_EXPIRES_IN as any,
   });
 }
 
@@ -206,4 +206,3 @@ export function createErrorResponse(
     { status }
   );
 }
-

@@ -31,11 +31,11 @@ export default function ProfilePage() {
   });
 
   // 处理更新用户信息
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     setError("");
     setMessage("");
 
-    const result = updateUser(editForm);
+    const result = await updateUser(editForm);
     if (result.success) {
       setMessage("更新成功");
       setIsEditing(false);
@@ -45,7 +45,7 @@ export default function ProfilePage() {
   };
 
   // 处理修改密码
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     setError("");
     setMessage("");
 
@@ -60,7 +60,7 @@ export default function ProfilePage() {
       return;
     }
 
-    const result = changePassword(
+    const result = await changePassword(
       passwordForm.oldPassword,
       passwordForm.newPassword
     );
